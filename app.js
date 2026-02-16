@@ -324,7 +324,7 @@ function initIndexPage() {
   });
 
   // Listen for auth state changes
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged((user) => {
     console.log('onAuthStateChanged fired, user =', user);
     setAuthDebug('onAuthStateChanged: ' + (user ? JSON.stringify({ uid: user.uid, email: user.email, displayName: user.displayName }) : 'null'));
     if (user) {
@@ -408,7 +408,7 @@ function initLoginPage() {
           setAuthDebug('waiting for onAuthStateChanged to confirm login...');
           await new Promise((resolve) => {
             let resolved = false;
-            const un = onAuthStateChanged(auth, (user) => {
+            const un = onAuthStateChanged((user) => {
               setAuthDebug('onAuthStateChanged during login: ' + JSON.stringify(user ? { uid: user.uid, email: user.email } : null));
               if (user && !resolved) { resolved = true; try { un(); } catch {} ; resolve(); }
             });
@@ -431,7 +431,7 @@ function initAddMixPage() {
   const msg = document.getElementById("msg");
   const { auth, onAuthStateChanged } = window.firebase;
 
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged((user) => {
     if (!user) {
       window.location.href = "login.html";
       return;
