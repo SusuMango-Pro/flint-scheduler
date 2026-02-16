@@ -21,6 +21,10 @@
       </div>
     </header>
 
+    <div style="max-width:1100px;margin:8px auto 0;padding:0 16px;">
+      <div id="authDebug" class="msg" style="color:#9aa4b2;">auth debug: (no data)</div>
+    </div>
+
     <section class="card">
       <div class="cardHead">
         <h2>Active mixes</h2>
@@ -32,11 +36,12 @@
           <thead>
             <tr>
               <th>Who</th>
-              <th>What</th>
-              <th>Started</th>
-              <th>Duration</th>
-              <th>Time left</th>
+              <th>Mix</th>
+              <th>Current Step</th>
+              <th>Progress</th>
+              <th>Time Left</th>
               <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody id="mixRows"></tbody>
@@ -44,7 +49,7 @@
       </div>
 
       <p class="note">
-        Prototype: mixes + accounts are stored locally in your browser (localStorage).
+        Multi-step mixing system. Mixes are stored in Firebase Cloud Firestore in real-time.
       </p>
     </section>
   </div>
@@ -52,7 +57,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDp7TN2BttsFGRjYE-ZjT5t8gMl3z4c4CI",
@@ -67,9 +72,11 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+    // Ensure auth persists across pages
+    setPersistence(auth, browserLocalPersistence).catch((e) => console.warn('setPersistence failed', e));
 
     // Export for use in app.js
-    window.firebase = { app, db, auth, getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, updateDoc };
+    window.firebase = { app, db, auth, getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, updateDoc, onAuthStateChanged };
   </script>
 
   <script src="app.js"></script>

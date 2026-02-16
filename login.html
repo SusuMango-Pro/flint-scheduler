@@ -37,8 +37,8 @@
       <h2>Log in</h2>
       <div class="formRow">
         <div class="field">
-          <label>Username</label>
-          <input id="li_username" placeholder="e.g. alex" />
+          <label>email</label>
+          <input id="li_email" type="email" placeholder="name@company.com" />
         </div>
         <div class="field">
           <label>Password</label>
@@ -57,7 +57,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDp7TN2BttsFGRjYE-ZjT5t8gMl3z4c4CI",
@@ -71,8 +71,10 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+    // Ensure auth persists across pages
+    setPersistence(auth, browserLocalPersistence).catch((e) => console.warn('setPersistence failed', e));
 
-    window.firebase = { app, db, auth, getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, updateDoc };
+    window.firebase = { app, db, auth, getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, updateDoc, onAuthStateChanged };
   </script>
 
   <script src="app.js"></script>

@@ -19,11 +19,40 @@
           <label>What are you mixing?</label>
           <input id="mixName" placeholder="e.g. Batch A / Powder set #2" />
         </div>
+      </div>
 
+      <h3 style="margin-top: 20px; margin-bottom: 10px;">Mixing Steps</h3>
+      
+      <div class="formRow">
         <div class="field">
-          <label>Total duration (minutes)</label>
-          <input id="mixMinutes" type="number" min="1" step="1" placeholder="e.g. 120" />
-          <small>Tip: 120 = 2 hours</small>
+          <label>Step 1 - Name</label>
+          <input id="step1Name" placeholder="e.g. Powder 1" />
+        </div>
+        <div class="field">
+          <label>Step 1 - Duration (minutes)</label>
+          <input id="step1Minutes" type="number" min="1" step="1" placeholder="e.g. 30" />
+        </div>
+      </div>
+
+      <div class="formRow">
+        <div class="field">
+          <label>Step 2 - Name</label>
+          <input id="step2Name" placeholder="e.g. Powder 2" />
+        </div>
+        <div class="field">
+          <label>Step 2 - Duration (minutes)</label>
+          <input id="step2Minutes" type="number" min="1" step="1" placeholder="e.g. 30" />
+        </div>
+      </div>
+
+      <div class="formRow">
+        <div class="field">
+          <label>Step 3 - Name</label>
+          <input id="step3Name" placeholder="e.g. Powder 3" />
+        </div>
+        <div class="field">
+          <label>Step 3 - Duration (minutes)</label>
+          <input id="step3Minutes" type="number" min="1" step="1" placeholder="e.g. 30" />
         </div>
       </div>
 
@@ -39,7 +68,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDp7TN2BttsFGRjYE-ZjT5t8gMl3z4c4CI",
@@ -53,8 +82,10 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+    // Ensure auth persists across pages
+    setPersistence(auth, browserLocalPersistence).catch((e) => console.warn('setPersistence failed', e));
 
-    window.firebase = { app, db, auth, getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, updateDoc };
+    window.firebase = { app, db, auth, getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, updateDoc, onAuthStateChanged };
   </script>
 
   <script src="app.js"></script>
