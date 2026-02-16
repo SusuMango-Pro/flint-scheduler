@@ -13,53 +13,107 @@
   <div class="container small">
     <header>
       <h1>Add a new mix</h1>
-      <p class="subtitle">You must be logged in to add a mix.</p>
+      <p class="subtitle">Create a mix with custom powder stages, category, and color.</p>
     </header>
+
+    <!-- TEMPLATES / QUICK ADD SECTION -->
+    <section class="card" id="templatesSection" style="display:none;">
+      <div class="cardHead">
+        <h2>Quick Add from Template</h2>
+      </div>
+      <div id="templatesList"></div>
+      <hr style="margin: 20px 0;">
+      <h3>Create New Template</h3>
+      <div class="formRow">
+        <div class="field">
+          <label>Template Name *</label>
+          <input id="templateName" placeholder="e.g. Standard Explosive Mix" />
+        </div>
+        <div class="field">
+          <label>Category</label>
+          <input id="templateCategory" placeholder="e.g. Explosive, Fertilizer" list="categoryOptions" />
+        </div>
+        <div class="field">
+          <label>Description (optional)</label>
+          <input id="templateDescription" placeholder="Notes about this template" />
+        </div>
+      </div>
+      <div class="formRow">
+        <div class="field">
+          <label>Color</label>
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <input id="templateColor" type="color" value="#666666" style="width: 60px; height: 40px; cursor: pointer; border: 1px solid #ddd; border-radius: 4px;" />
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button type="button" class="templateColorPreset" style="background: #FF0000;" title="Red"></button>
+              <button type="button" class="templateColorPreset" style="background: #00AA00;" title="Green"></button>
+              <button type="button" class="templateColorPreset" style="background: #0000FF;" title="Blue"></button>
+              <button type="button" class="templateColorPreset" style="background: #FFAA00;" title="Orange"></button>
+              <button type="button" class="templateColorPreset" style="background: #FF00FF;" title="Magenta"></button>
+              <button type="button" class="templateColorPreset" style="background: #00AAAA;" title="Cyan"></button>
+              <button type="button" class="templateColorPreset" style="background: #FFFF00;" title="Yellow"></button>
+              <button type="button" class="templateColorPreset" style="background: #666666;" title="Gray"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="templatePowdersList" style="margin: 15px 0;"></div>
+      <button class="btn" id="addTemplatePowderBtn">+ Add powder stage</button>
+      <div style="margin-top: 15px;">
+        <button class="btn primary" id="saveTemplateBtn">Save Template</button>
+      </div>
+      <div id="templateMsg" class="msg"></div>
+    </section>
 
     <section class="card">
       <div class="formRow">
         <div class="field">
-          <label>What are you mixing?</label>
+          <label>Mix Name *</label>
           <input id="mixName" placeholder="e.g. Batch A / Powder set #2" />
         </div>
+        <div class="field">
+          <label>Category</label>
+          <input id="mixCategory" placeholder="e.g. Explosive, Fertilizer" list="categoryOptions" />
+          <datalist id="categoryOptions">
+            <option value="Explosive">
+            <option value="Fertilizer">
+            <option value="Chemical">
+            <option value="Pyrotechnic">
+            <option value="Test">
+            <option value="Other">
+          </datalist>
+        </div>
       </div>
 
-      <h3 style="margin-top: 20px; margin-bottom: 10px;">Mixing Steps</h3>
+      <div class="formRow">
+        <div class="field">
+          <label>Description (optional)</label>
+          <textarea id="mixDescription" placeholder="Optional notes about this mix" style="resize: vertical; min-height: 60px;"></textarea>
+        </div>
+        <div class="field">
+          <label>Color</label>
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <input id="mixColor" type="color" value="#666666" style="width: 60px; height: 40px; cursor: pointer; border: 1px solid #ddd; border-radius: 4px;" />
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button type="button" class="colorPreset" style="background: #FF0000;" title="Red"></button>
+              <button type="button" class="colorPreset" style="background: #00AA00;" title="Green"></button>
+              <button type="button" class="colorPreset" style="background: #0000FF;" title="Blue"></button>
+              <button type="button" class="colorPreset" style="background: #FFAA00;" title="Orange"></button>
+              <button type="button" class="colorPreset" style="background: #FF00FF;" title="Magenta"></button>
+              <button type="button" class="colorPreset" style="background: #00AAAA;" title="Cyan"></button>
+              <button type="button" class="colorPreset" style="background: #FFFF00;" title="Yellow"></button>
+              <button type="button" class="colorPreset" style="background: #666666;" title="Gray"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 20px; margin-bottom: 10px;">Mixing Stages (Powders)</h3>
       
-      <div class="formRow">
-        <div class="field">
-          <label>Step 1 - Name</label>
-          <input id="step1Name" placeholder="e.g. Powder 1" />
-        </div>
-        <div class="field">
-          <label>Step 1 - Duration (minutes)</label>
-          <input id="step1Minutes" type="number" min="1" step="1" placeholder="e.g. 30" />
-        </div>
-      </div>
+      <div id="powderStagesList"></div>
+      
+      <button class="btn" id="addPowderStageBtn" style="margin-top: 10px;">+ Add powder stage</button>
 
-      <div class="formRow">
-        <div class="field">
-          <label>Step 2 - Name</label>
-          <input id="step2Name" placeholder="e.g. Powder 2" />
-        </div>
-        <div class="field">
-          <label>Step 2 - Duration (minutes)</label>
-          <input id="step2Minutes" type="number" min="1" step="1" placeholder="e.g. 30" />
-        </div>
-      </div>
-
-      <div class="formRow">
-        <div class="field">
-          <label>Step 3 - Name</label>
-          <input id="step3Name" placeholder="e.g. Powder 3" />
-        </div>
-        <div class="field">
-          <label>Step 3 - Duration (minutes)</label>
-          <input id="step3Minutes" type="number" min="1" step="1" placeholder="e.g. 30" />
-        </div>
-      </div>
-
-      <button class="btn primary" id="createMixBtn">Create mix</button>
+      <button class="btn primary" id="createMixBtn" style="margin-top: 20px;">Create mix</button>
       <div class="rowEnd">
         <a class="btn" href="index.html">← Back</a>
       </div>
@@ -72,7 +126,16 @@
 
   <script src="app.js"></script>
   <script>
-    initAddMixPage();
+    function waitForFirebaseInit(cb) {
+      if (window.firebase && window.firebase.auth) {
+        cb();
+      } else {
+        setTimeout(() => waitForFirebaseInit(cb), 50);
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      waitForFirebaseInit(initAddMixPage);
+    });
   </script>
 </body>
 </html>

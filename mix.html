@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mix Details · Mix Scheduler</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header class="topbar">
+      <div>
+        <h1>Mix Details</h1>
+        <p class="subtitle">View and manage this mix</p>
+      </div>
+      <div class="topbar-right">
+        <div id="userBadge" class="badge muted">Not logged in</div>
+        <a class="btn" href="index.html">← Back to Dashboard</a>
+      </div>
+    </header>
+
+    <section class="card">
+      <div id="mixContent"></div>
+      <div id="errorMsg" class="msg" style="color: #d9534f;"></div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    function waitForFirebaseInit(cb) {
+      if (window.firebase && window.firebase.auth) {
+        cb();
+      } else {
+        setTimeout(() => waitForFirebaseInit(cb), 50);
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      waitForFirebaseInit(initMixDetailPage);
+    });
+  </script>
+</body>
+</html>

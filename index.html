@@ -36,22 +36,12 @@
           <button class="btn" id="seedDemoBtn">Load demo</button>
         </div>
 
-        <div class="tableWrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Who</th>
-                <th>Mix</th>
-                <th>Current Step</th>
-                <th>Progress</th>
-                <th>Time Left</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="mixRows"></tbody>
-          </table>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid #ddd;">
+          <button class="tabBtn" id="teamTabBtn" style="padding: 10px 15px; background: none; border: none; border-bottom: 3px solid #007bff; cursor: pointer; font-weight: bold; color: #007bff;">Team 🌍</button>
+          <button class="tabBtn" id="myTabBtn" style="padding: 10px 15px; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: bold; color: #666; transition: all 0.3s;">My Mixes 👤</button>
         </div>
+
+        <div id="mixRows" style="display: flex; flex-direction: column; gap: 20px;"></div>
 
         <p class="note">
           Multi-step mixing system. Mixes are stored in Firebase Cloud Firestore in real-time.
