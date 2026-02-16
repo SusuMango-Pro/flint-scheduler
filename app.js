@@ -8,33 +8,9 @@ function setAuthDebug(msg) {
 }
 
 // ====== Firebase (compat) initialization ======
-const firebaseConfig = {
-  apiKey: "AIzaSyDp7TN2BttsFGRjYE-ZjT5t8gMl3z4c4CI",
-  authDomain: "flint-mix-scheduler-18f59.firebaseapp.com",
-  projectId: "flint-mix-scheduler-18f59",
-  storageBucket: "flint-mix-scheduler-18f59.firebasestorage.app",
-  messagingSenderId: "536576866030",
-  appId: "1:536576866030:web:00d576009813dd02c965ff"
-};
-
-if (typeof firebase !== 'undefined' && firebase && firebase.initializeApp) {
-  try {
-    if (!firebase.apps || firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    window.firebase = Object.assign(window.firebase || {}, {
-      firebase, auth, db,
-      onAuthStateChanged: auth.onAuthStateChanged.bind(auth),
-      signOut: auth.signOut.bind(auth)
-    });
-  } catch (e) {
-    console.warn('Firebase init failed', e);
-  }
-} else {
-  console.warn('Firebase compat SDK not loaded');
-}
-
 // ====== Pages ======
+// Only one definition of each init function, and helpers, below:
+
 function initIndexPage() {
   const userBadge = document.getElementById("userBadge");
   const loginLink = document.getElementById("loginLink");
@@ -42,13 +18,10 @@ function initIndexPage() {
   const addMixBtn = document.getElementById("addMixBtn");
   const mixRows = document.getElementById("mixRows");
   const seedDemoBtn = document.getElementById("seedDemoBtn");
-
   const { auth } = window.firebase;
   setAuthDebug('initIndexPage - window.firebase present: ' + (!!window.firebase) + ' auth.currentUser: ' + JSON.stringify(auth && auth.currentUser));
-
   let currentUser = null;
   let unsubscribeMixes = null;
-
   function renderHeader() {
     if (currentUser) {
       const display = currentUser.username || currentUser.email || 'Unknown';
@@ -71,7 +44,40 @@ function initIndexPage() {
       logoutBtn.style.display = "none";
     }
   }
-
+  function renderTable(mixes) {
+    const t = nowMs();
+    mixRows.innerHTML = "";
+    if (mixes.length === 0) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="7" style="color:#9aa4b2;">No active mixes yet.</td>`;
+      mixRows.appendChild(tr);
+      return;
+    }
+    for (const mix of mixes) {
+      const stepIndex = mix.currentStepIndex || 0;
+      const steps = mix.steps || [];
+      const currentStep = steps[stepIndex];
+      if (!currentStep) continue;
+      const stepStarted = mix.currentStepStartedAtMs || mix.createdAtMs || t;
+      const stepEnd = stepStarted + currentStep.durationMs;
+      const timeLeftMs = Math.max(0, stepEnd - t);
+      const status = timeLeftMs <= 0 ? { text:"Step complete", cls:"done" } : { text:"In progress", cls:"running" };
+      const isLastStep = stepIndex === steps.length - 1;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${mix.createdBy}</td>
+        <td>${mix.mixName}</td>
+        <td>${currentStep.name}</td>
+        <td>${stepIndex + 1}/${steps.length}</td>
+        <td>${msToClock(timeLeftMs)}</td>
+        <td class="status ${status.cls}">${status.text}</td>
+        <td><button class="btn small" onclick="nextStep('${mix.id}', ${stepIndex}, ${steps.length})">
+          ${isLastStep ? "✓ Done" : "→ Next"}
+        </button></td>
+      `;
+      mixRows.appendChild(tr);
+    }
+  }
   auth.onAuthStateChanged((user) => {
     setAuthDebug('onAuthStateChanged: ' + (user ? JSON.stringify({ uid: user.uid, email: user.email, displayName: user.displayName }) : 'null'));
     if (user) {
@@ -90,9 +96,51 @@ function initIndexPage() {
       renderTable([]);
     }
   });
-
-  // ...existing code for renderTable, addMixBtn, logoutBtn, seedDemoBtn, setInterval...
-  // (copy from previous definition, unchanged)
+  addMixBtn.addEventListener("click", (e) => {
+    if (!currentUser) {
+      e.preventDefault();
+      window.location.href = "login.html";
+    }
+  });
+  logoutBtn.addEventListener("click", async () => {
+    await logoutUser();
+  });
+  seedDemoBtn.addEventListener("click", () => {
+    const base = nowMs();
+    renderTable([
+      { 
+        id: "1", 
+        createdBy: currentUser?.username || "demoUser", 
+        mixName: "Batch A",
+        createdAtMs: base - 30*60*1000,
+        currentStepIndex: 0,
+        currentStepStartedAtMs: base - 10*60*1000,
+        steps: [
+          { name: "Powder 1", durationMs: 30*60*1000 },
+          { name: "Powder 2", durationMs: 20*60*1000 },
+          { name: "Powder 3", durationMs: 15*60*1000 }
+        ]
+      },
+      { 
+        id: "2", 
+        createdBy: "sam", 
+        mixName: "Batch B",
+        createdAtMs: base - 50*60*1000,
+        currentStepIndex: 1,
+        currentStepStartedAtMs: base - 20*60*1000,
+        steps: [
+          { name: "Powder 1", durationMs: 25*60*1000 },
+          { name: "Powder 2", durationMs: 25*60*1000 },
+          { name: "Powder 3", durationMs: 25*60*1000 }
+        ]
+      },
+    ]);
+  });
+  setInterval(() => {
+    const rows = Array.from(mixRows.querySelectorAll("tr"));
+    if (rows.length === 0) return;
+    // ...existing code for time update...
+  }, 1000);
 }
 
 function initLoginPage() {
@@ -122,7 +170,6 @@ function initLoginPage() {
     setAuthDebug('login result: ' + JSON.stringify(res));
     try { setAuthDebug('auth.currentUser after login: ' + JSON.stringify(window.firebase.auth.currentUser)); } catch(e) {}
     if (res.ok) {
-      // Wait for Firebase to persist the auth state before redirecting.
       try {
         const { auth } = window.firebase || {};
         if (auth && auth.onAuthStateChanged) {
@@ -212,6 +259,68 @@ function initAccountPage() {
       if (resetBtn) resetBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         await sendPasswordResetLink();
+      });
+      const logoutBtnAccount = document.getElementById('logoutBtnAccount');
+      if (logoutBtnAccount) logoutBtnAccount.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await logoutUser();
+        window.location.href = 'login.html';
+      });
+      const delBtn = document.getElementById('deleteAccountBtn');
+      if (delBtn) delBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (!confirm('Delete your account? This cannot be undone.')) return;
+        await deleteAccount();
+      });
+    } else {
+      accountPanel.innerHTML = "<div class='muted'>Not logged in</div>";
+    }
+  }
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      currentUser = { uid: user.uid, email: user.email, username: user.displayName };
+      renderAccountPanel();
+    } else {
+      currentUser = null;
+      renderAccountPanel();
+    }
+  });
+}
+
+// Only one definition of addMix, subscribeToMixes, etc. below:
+async function addMix({ createdBy, createdByUid, mixName, steps }) {
+  const db = window.firebase && window.firebase.db;
+  if (!db) return { ok: false, msg: 'DB not initialized' };
+  try {
+    await db.collection('mixes').add({
+      createdBy,
+      createdByUid,
+      mixName,
+      steps: steps,
+      currentStepIndex: 0,
+      createdAtMs: nowMs(),
+      currentStepStartedAtMs: null
+    });
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, msg: err.message };
+  }
+}
+
+async function subscribeToMixes(callback) {
+  const db = window.firebase && window.firebase.db;
+  if (!db) return null;
+  try {
+    return db.collection('mixes').onSnapshot((snapshot) => {
+      const mixes = [];
+      snapshot.forEach((d) => mixes.push({ id: d.id, ...d.data() }));
+      callback(mixes);
+    });
+  } catch (err) {
+    console.error('Error subscribing to mixes:', err);
+    return null;
+  }
+}
       });
       const logoutBtnAccount = document.getElementById('logoutBtnAccount');
       if (logoutBtnAccount) logoutBtnAccount.addEventListener('click', async (e) => {
