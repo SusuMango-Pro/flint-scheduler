@@ -1,3 +1,26 @@
+// ====== Firebase (compat) initialization ======
+const firebaseConfig = {
+  apiKey: "AIzaSyDp7TN2BttsFGRjYE-ZjT5t8gMl3z4c4CI",
+  authDomain: "flint-mix-scheduler-18f59.firebaseapp.com",
+  projectId: "flint-mix-scheduler-18f59",
+  storageBucket: "flint-mix-scheduler-18f59.firebasestorage.app",
+  messagingSenderId: "536576866030",
+  appId: "1:536576866030:web:00d576009813dd02c965ff"
+};
+
+if (typeof firebase !== 'undefined' && firebase && firebase.initializeApp) {
+  try {
+    if (!firebase.apps || firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    window.firebase = { auth, db };
+  } catch (e) {
+    console.error('Firebase init failed', e);
+  }
+} else {
+  console.error('Firebase compat SDK not loaded');
+}
+
 // ====== Helpers ======
 function nowMs() { return Date.now(); }
 function setAuthDebug(msg) {
@@ -7,7 +30,6 @@ function setAuthDebug(msg) {
   } catch (e) { /* ignore */ }
 }
 
-// ====== Firebase (compat) initialization ======
 // ====== Pages ======
 // Only one definition of each init function, and helpers, below:
 
@@ -32,11 +54,23 @@ function initIndexPage() {
         <div style="display:flex;flex-direction:column;gap:4px;min-width:200px;">
           <div style="font-weight:700;">${display}</div>
           <div style="font-size:13px;color:var(--muted);">${currentUser.email || ''}</div>
+          <div style="font-size:13px;color:var(--muted);">Password: ••••• <button id="resetPwBtn" class="btn small">Reset</button></div>
           <div style="margin-top:6px;display:flex;gap:8px;justify-content:flex-end;">
-            <a class="btn small" href="account.html" style="background:#2b2b2b;">Account settings</a>
+            <button id="deleteAccountBtn" class="btn small" style="background:#2b2b2b;">Delete account</button>
           </div>
         </div>
       `;
+      const resetBtn = document.getElementById('resetPwBtn');
+      if (resetBtn) resetBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await sendPasswordResetLink();
+      });
+      const delBtn = document.getElementById('deleteAccountBtn');
+      if (delBtn) delBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (!confirm('Delete your account? This cannot be undone.')) return;
+        await deleteAccount();
+      });
     } else {
       userBadge.textContent = "Not logged in";
       userBadge.classList.add("muted");
