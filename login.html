@@ -61,7 +61,14 @@
 
   <script src="app.js"></script>
   <script>
-    initLoginPage();
+    function waitForFirebaseInit(cb) {
+      if (window.firebase && window.firebase.auth) {
+        cb();
+      } else {
+        setTimeout(() => waitForFirebaseInit(cb), 50);
+      }
+    }
+    waitForFirebaseInit(initLoginPage);
   </script>
 </body>
 </html>
