@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Account · Mix Scheduler</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <div class="container small">
+    <header>
+      <h1>Account Settings</h1>
+      <p class="subtitle">Manage your account</p>
+    </header>
+    <section class="card" id="accountPanel">
+      <!-- Account info and actions will be rendered here by app.js -->
+    </section>
+    <div class="rowEnd">
+      <a class="btn" href="index.html">← Back</a>
+    </div>
+    <div id="authDebug" class="msg"></div>
+  </div>
+  <script src="app.js"></script>
+  <script>
+    initAccountPage();
+  </script>
+</body>
+</html>

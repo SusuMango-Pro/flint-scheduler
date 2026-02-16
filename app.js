@@ -1,47 +1,99 @@
 // ====== Helpers ======
 function nowMs() { return Date.now(); }
-function msToClock(ms) {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const ss = s % 60;
-  return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(ss).padStart(2,"0")}`;
-}
-function fmtTime(msEpoch) {
-  return new Date(msEpoch).toLocaleString();
-}
+function initIndexPage() {
+  const userBadge = document.getElementById("userBadge");
+  const loginLink = document.getElementById("loginLink");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const addMixBtn = document.getElementById("addMixBtn");
+  const mixRows = document.getElementById("mixRows");
+  const seedDemoBtn = document.getElementById("seedDemoBtn");
 
-function setAuthDebug(msg) {
-  try {
-    const el = document.getElementById('authDebug');
-    if (el) el.textContent = typeof msg === 'string' ? msg : JSON.stringify(msg);
-  } catch (e) { /* ignore */ }
-}
+  const { auth, onAuthStateChanged } = window.firebase;
+  console.log('initIndexPage - window.firebase present?', !!window.firebase);
+  console.log('initIndexPage - auth.currentUser before listener:', auth && auth.currentUser);
+  setAuthDebug('initIndexPage - window.firebase present: ' + (!!window.firebase) + ' auth.currentUser: ' + JSON.stringify(auth && auth.currentUser));
 
-// ====== Firebase (compat) initialization ======
-// Use compat SDK (firebase.*) loaded by script tags in HTML <head>
-const firebaseConfig = {
-  apiKey: "AIzaSyDp7TN2BttsFGRjYE-ZjT5t8gMl3z4c4CI",
-  authDomain: "flint-mix-scheduler-18f59.firebaseapp.com",
-  projectId: "flint-mix-scheduler-18f59",
-  storageBucket: "flint-mix-scheduler-18f59.firebasestorage.app",
-  messagingSenderId: "536576866030",
-  appId: "1:536576866030:web:00d576009813dd02c965ff"
-};
+  let currentUser = null;
+  let unsubscribeMixes = null;
 
-if (typeof firebase !== 'undefined' && firebase && firebase.initializeApp) {
-  try {
-    if (!firebase.apps || firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    // expose simpler api
-    window.firebase = Object.assign(window.firebase || {}, {
-      firebase, auth, db,
-      onAuthStateChanged: auth.onAuthStateChanged.bind(auth),
-      signOut: auth.signOut.bind(auth)
+  function renderHeader() {
+    if (currentUser) {
+      const display = currentUser.username || currentUser.email || 'Unknown';
+      userBadge.classList.remove("muted");
+      loginLink.style.display = "none";
+      logoutBtn.style.display = "inline-flex";
+
+      userBadge.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:200px;">
+          <div style="font-weight:700;">${display}</div>
+          <div style="font-size:13px;color:var(--muted);">${currentUser.email || ''}</div>
+          <div style="margin-top:6px;display:flex;gap:8px;justify-content:flex-end;">
+            <a class="btn small" href="account.html" style="background:#2b2b2b;">Account settings</a>
+          </div>
+        </div>
+      `;
+    } else {
+      userBadge.textContent = "Not logged in";
+      userBadge.classList.add("muted");
+      loginLink.style.display = "inline-flex";
+      logoutBtn.style.display = "none";
+    }
+  }
+  // Account page logic
+  function initAccountPage() {
+    const accountPanel = document.getElementById("accountPanel");
+    const { auth, onAuthStateChanged } = window.firebase;
+    let currentUser = null;
+
+    function renderAccountPanel() {
+      if (currentUser) {
+        const display = currentUser.username || currentUser.email || 'Unknown';
+        accountPanel.innerHTML = `
+          <div style="display:flex;flex-direction:column;gap:4px;min-width:200px;">
+            <div style="font-weight:700;">${display}</div>
+            <div style="font-size:13px;color:var(--muted);">${currentUser.email || ''}</div>
+            <div style="font-size:13px;color:var(--muted);">Password: ••••• <button id="resetPwBtn" class="btn small">Reset</button></div>
+            <div style="margin-top:6px;display:flex;gap:8px;justify-content:flex-end;">
+              <button id="logoutBtnAccount" class="btn small">Log out</button>
+              <button id="deleteAccountBtn" class="btn small" style="background:#2b2b2b;">Delete account</button>
+            </div>
+          </div>
+        `;
+
+        const resetBtn = document.getElementById('resetPwBtn');
+        if (resetBtn) resetBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          await sendPasswordResetLink();
+        });
+
+        const logoutBtnAccount = document.getElementById('logoutBtnAccount');
+        if (logoutBtnAccount) logoutBtnAccount.addEventListener('click', async (e) => {
+          e.preventDefault();
+          await logoutUser();
+          window.location.href = 'login.html';
+        });
+
+        const delBtn = document.getElementById('deleteAccountBtn');
+        if (delBtn) delBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          if (!confirm('Delete your account? This cannot be undone.')) return;
+          await deleteAccount();
+        });
+      } else {
+        accountPanel.innerHTML = "<div class='muted'>Not logged in</div>";
+      }
+    }
+
+    onAuthStateChanged((user) => {
+      if (user) {
+        currentUser = { uid: user.uid, email: user.email, username: user.displayName };
+        renderAccountPanel();
+      } else {
+        currentUser = null;
+        renderAccountPanel();
+      }
     });
-  } catch (e) {
-    console.warn('Firebase init failed', e);
+  }
   }
 } else {
   console.warn('Firebase compat SDK not loaded');
