@@ -158,39 +158,39 @@ function initLoginPage() {
     setAuthDebug('signup result: ' + JSON.stringify(res));
     if (res.ok) setTimeout(() => window.location.href = "index.html", 1000);
   });
-  document.getElementById("loginBtn").addEventListener("click", async () => {
-    const email = document.getElementById("li_email").value.trim();
-    const password = document.getElementById("li_password").value;
-    if (!email || !password) {
-      msg.textContent = "Fill email + password.";
-      return;
-    }
-    const res = await login({ email, password });
-    msg.textContent = res.msg;
-    setAuthDebug('login result: ' + JSON.stringify(res));
-    try { setAuthDebug('auth.currentUser after login: ' + JSON.stringify(window.firebase.auth.currentUser)); } catch(e) {}
-    if (res.ok) {
-      try {
-        const { auth } = window.firebase || {};
-        if (auth && auth.onAuthStateChanged) {
-          setAuthDebug('waiting for onAuthStateChanged to confirm login...');
-          await new Promise((resolve) => {
-            let resolved = false;
-            const un = auth.onAuthStateChanged((user) => {
-              setAuthDebug('onAuthStateChanged during login: ' + JSON.stringify(user ? { uid: user.uid, email: user.email } : null));
-              if (user && !resolved) { resolved = true; try { un(); } catch {} ; resolve(); }
-            });
-            setTimeout(() => { if (!resolved) { resolved = true; try { un(); } catch {} ; resolve(); } }, 3000);
-          });
-        } else {
-          await new Promise(r => setTimeout(r, 800));
-        }
-      } catch (e) {
-        console.warn('error waiting for auth state', e);
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const email = document.getElementById("li_email").value.trim();
+      const password = document.getElementById("li_password").value;
+      if (!email || !password) {
+        msg.textContent = "Fill email + password.";
+        return;
       }
-      window.location.href = "index.html";
-    }
-  });
+      const res = await login({ email, password });
+      msg.textContent = res.msg;
+      setAuthDebug('login result: ' + JSON.stringify(res));
+      try { setAuthDebug('auth.currentUser after login: ' + JSON.stringify(window.firebase.auth.currentUser)); } catch(e) {}
+      if (res.ok) {
+        try {
+          const { auth } = window.firebase || {};
+          if (auth && auth.onAuthStateChanged) {
+            setAuthDebug('waiting for onAuthStateChanged to confirm login...');
+            await new Promise((resolve) => {
+              let resolved = false;
+              const un = auth.onAuthStateChanged((user) => {
+                setAuthDebug('onAuthStateChanged during login: ' + JSON.stringify(user ? { uid: user.uid, email: user.email } : null));
+                if (user && !resolved) { resolved = true; try { un(); } catch {} ; resolve(); }
+              });
+              setTimeout(() => { if (!resolved) { resolved = true; try { un(); } catch {} ; resolve(); } }, 3000);
+            });
+          } else {
+            await new Promise(r => setTimeout(r, 800));
+          }
+        } catch (e) {
+          console.warn('error waiting for auth state', e);
+        }
+        window.location.href = "index.html";
+      }
+    });
 }
 
 function initAddMixPage() {
