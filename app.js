@@ -589,10 +589,8 @@ function initIndexPage() {
 
   let currentUser = null;
   let currentTab = "team"; // "team" or "my"
-  let teamMixes = [];
-  let myMixes = [];
-  let teamUnsubscribe = null;
-  let myUnsubscribe = null;
+  let allMixes = [];
+  let unsubscribe = null;
 
   logoutBtn?.addEventListener("click", async () => {
     await logoutUser();
@@ -635,37 +633,19 @@ function initIndexPage() {
       teamTabBtn.style.display = "inline-block";
       myTabBtn.style.display = "inline-block";
 
-      // Subscribe to team mixes (everyone but me)
-      teamUnsubscribe = db.collection("mixes")
+      // Subscribe to ALL non-deleted mixes, filter in JavaScript
+      unsubscribe = db.collection("mixes")
         .where("isDeleted", "==", false)
-        .where("createdByUid", "!=", user.uid)
         .onSnapshot(
           (snapshot) => {
-            teamMixes = [];
+            allMixes = [];
             snapshot.forEach((doc) => {
-              teamMixes.push({ id: doc.id, ...doc.data() });
+              allMixes.push({ id: doc.id, ...doc.data() });
             });
-            if (currentTab === "team") renderMixes();
+            renderMixes();
           },
           (error) => {
-            console.error("Team mixes subscription error:", error);
-          }
-        );
-
-      // Subscribe to my mixes
-      myUnsubscribe = db.collection("mixes")
-        .where("isDeleted", "==", false)
-        .where("createdByUid", "==", user.uid)
-        .onSnapshot(
-          (snapshot) => {
-            myMixes = [];
-            snapshot.forEach((doc) => {
-              myMixes.push({ id: doc.id, ...doc.data() });
-            });
-            if (currentTab === "my") renderMixes();
-          },
-          (error) => {
-            console.error("My mixes subscription error:", error);
+            console.error("Mixes subscription error:", error);
           }
         );
 
@@ -678,13 +658,21 @@ function initIndexPage() {
       myTabBtn.style.display = "none";
       mixRows.innerHTML = "<p style='color: #999;'>Please log in to view mixes</p>";
 
-      if (teamUnsubscribe) teamUnsubscribe();
-      if (myUnsubscribe) myUnsubscribe();
+      if (unsubscribe) unsubscribe();
     }
   });
 
   function renderMixes() {
-    const mixes = currentTab === "team" ? teamMixes : myMixes;
+    // Filter mixes based on current tab
+    let mixes = [];
+    if (currentTab === "team") {
+      // Show mixes from others (not created by current user)
+      mixes = allMixes.filter(mix => mix.createdByUid !== currentUser.uid);
+    } else {
+      // Show only my mixes
+      mixes = allMixes.filter(mix => mix.createdByUid === currentUser.uid);
+    }
+
     renderTable(mixes);
   }
 

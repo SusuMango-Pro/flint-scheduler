@@ -19,6 +19,8 @@ h2{margin:0 0 10px 0;font-size:18px}
 .btn.small{padding:6px 8px;font-size:12px}
 .btn.primary{background:var(--primary);border-color:transparent;color:white;font-weight:700}
 .btn.danger{background:var(--danger);border-color:transparent;color:white;font-weight:700}
+.colorPreset,.templateColorPreset{width:32px;height:32px;border-radius:4px;border:1px solid #444;cursor:pointer;padding:0}
+.colorPreset:hover,.templateColorPreset:hover{border-color:#666;transform:scale(1.05)}
 .badge{padding:8px 10px;border-radius:999px;border:1px solid var(--line);font-size:12px}
 .badge.muted{color:var(--muted)}
 .tableWrap{overflow-x:auto}
