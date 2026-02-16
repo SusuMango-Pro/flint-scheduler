@@ -36,6 +36,27 @@
     </section>
   </div>
 
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDp7TN2BttsFGRjYE-ZjT5t8gMl3z4c4CI",
+      authDomain: "flint-mix-scheduler-18f59.firebaseapp.com",
+      projectId: "flint-mix-scheduler-18f59",
+      storageBucket: "flint-mix-scheduler-18f59.firebasestorage.app",
+      messagingSenderId: "536576866030",
+      appId: "1:536576866030:web:a1b2c3d4e5f6g7h8i9j0k"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    window.firebase = { app, db, auth, getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, updateDoc };
+  </script>
+
   <script src="app.js"></script>
   <script>
     initAddMixPage();
