@@ -18,14 +18,44 @@ function setAuthDebug(msg) {
   } catch (e) { /* ignore */ }
 }
 
-// ====== Firebase Auth ======
-async function signup({ email, password, username }) {
-  const { auth } = window.firebase;
-  const { createUserWithEmailAndPassword, updateProfile } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-  
+// ====== Firebase (compat) initialization ======
+// Use compat SDK (firebase.*) loaded by script tags in HTML <head>
+const firebaseConfig = {
+  apiKey: "AIzaSyDp7TN2BttsFGRjYE-ZjT5t8gMl3z4c4CI",
+  authDomain: "flint-mix-scheduler-18f59.firebaseapp.com",
+  projectId: "flint-mix-scheduler-18f59",
+  storageBucket: "flint-mix-scheduler-18f59.firebasestorage.app",
+  messagingSenderId: "536576866030",
+  appId: "1:536576866030:web:00d576009813dd02c965ff"
+};
+
+if (typeof firebase !== 'undefined' && firebase && firebase.initializeApp) {
   try {
-    const userCred = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(userCred.user, { displayName: username });
+    if (!firebase.apps || firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    // expose simpler api
+    window.firebase = Object.assign(window.firebase || {}, {
+      firebase, auth, db,
+      onAuthStateChanged: auth.onAuthStateChanged.bind(auth),
+      signOut: auth.signOut.bind(auth)
+    });
+  } catch (e) {
+    console.warn('Firebase init failed', e);
+  }
+} else {
+  console.warn('Firebase compat SDK not loaded');
+}
+
+// ====== Firebase Auth (compat) ======
+async function signup({ email, password, username }) {
+  const auth = window.firebase && window.firebase.auth;
+  if (!auth) return { ok: false, msg: 'Auth not initialized' };
+  try {
+    const userCred = await auth.createUserWithEmailAndPassword(email, password);
+    if (userCred && userCred.user && username) {
+      await userCred.user.updateProfile({ displayName: username });
+    }
     return { ok: true, msg: "Account created. You are logged in." };
   } catch (err) {
     if (err.code === "auth/email-already-in-use") return { ok: false, msg: "Email already in use." };
@@ -35,11 +65,10 @@ async function signup({ email, password, username }) {
 }
 
 async function login({ email, password }) {
-  const { auth } = window.firebase;
-  const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-  
+  const auth = window.firebase && window.firebase.auth;
+  if (!auth) return { ok: false, msg: 'Auth not initialized' };
   try {
-    await signInWithEmailAndPassword(auth, email, password);
+    await auth.signInWithEmailAndPassword(email, password);
     return { ok: true, msg: "Logged in." };
   } catch (err) {
     if (err.code === "auth/user-not-found") return { ok: false, msg: "User not found." };
@@ -49,14 +78,10 @@ async function login({ email, password }) {
 }
 
 async function logoutUser() {
-  const { auth, signOut } = window.firebase || {};
+  const auth = window.firebase && window.firebase.auth;
+  if (!auth) return { ok: false, msg: 'Auth not initialized' };
   try {
-    if (signOut) {
-      await signOut(auth);
-    } else {
-      const mod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-      await mod.signOut(auth);
-    }
+    await auth.signOut();
     return { ok: true };
   } catch (err) {
     return { ok: false, msg: err.message };
@@ -65,17 +90,17 @@ async function logoutUser() {
 
 // ====== Firestore Mixes ======
 async function addMix({ createdBy, createdByUid, mixName, steps }) {
-  const { db, collection, addDoc } = window.firebase;
-  
+  const db = window.firebase && window.firebase.db;
+  if (!db) return { ok: false, msg: 'DB not initialized' };
   try {
-    await addDoc(collection(db, "mixes"), {
+    await db.collection('mixes').add({
       createdBy,
       createdByUid,
       mixName,
-      steps: steps, // Array of { name, durationMs }
+      steps: steps,
       currentStepIndex: 0,
       createdAtMs: nowMs(),
-      currentStepStartedAtMs: null,
+      currentStepStartedAtMs: null
     });
     return { ok: true };
   } catch (err) {
@@ -84,12 +109,12 @@ async function addMix({ createdBy, createdByUid, mixName, steps }) {
 }
 
 async function updateMixStep(mixId, stepIndex, startedAtMs) {
-  const { db, doc, updateDoc } = window.firebase;
-  
+  const db = window.firebase && window.firebase.db;
+  if (!db) return { ok: false, msg: 'DB not initialized' };
   try {
-    await updateDoc(doc(db, "mixes", mixId), {
+    await db.collection('mixes').doc(mixId).update({
       currentStepIndex: stepIndex,
-      currentStepStartedAtMs: startedAtMs,
+      currentStepStartedAtMs: startedAtMs
     });
     return { ok: true };
   } catch (err) {
@@ -98,18 +123,16 @@ async function updateMixStep(mixId, stepIndex, startedAtMs) {
 }
 
 async function subscribeToMixes(callback) {
-  const { db, collection, onSnapshot } = window.firebase;
-  
+  const db = window.firebase && window.firebase.db;
+  if (!db) return null;
   try {
-    return onSnapshot(collection(db, "mixes"), (snapshot) => {
+    return db.collection('mixes').onSnapshot((snapshot) => {
       const mixes = [];
-      snapshot.forEach((doc) => {
-        mixes.push({ id: doc.id, ...doc.data() });
-      });
+      snapshot.forEach((d) => mixes.push({ id: d.id, ...d.data() }));
       callback(mixes);
     });
   } catch (err) {
-    console.error("Error subscribing to mixes:", err);
+    console.error('Error subscribing to mixes:', err);
     return null;
   }
 }
@@ -184,14 +207,13 @@ function initIndexPage() {
   }
 
   async function sendPasswordResetLink() {
-    const { auth } = window.firebase || {};
+    const auth = window.firebase && window.firebase.auth;
     if (!auth || !auth.currentUser) {
       setAuthDebug('No authenticated user to reset password for.');
       return;
     }
     try {
-      const mod = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
-      await mod.sendPasswordResetEmail(auth, auth.currentUser.email);
+      await auth.sendPasswordResetEmail(auth.currentUser.email);
       setAuthDebug('Password reset email sent to ' + auth.currentUser.email);
     } catch (err) {
       setAuthDebug('Password reset failed: ' + err.message);
@@ -199,14 +221,13 @@ function initIndexPage() {
   }
 
   async function deleteAccount() {
-    const { auth } = window.firebase || {};
+    const auth = window.firebase && window.firebase.auth;
     if (!auth || !auth.currentUser) {
       setAuthDebug('No authenticated user to delete.');
       return;
     }
     try {
-      const mod = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
-      await mod.deleteUser(auth.currentUser);
+      await auth.currentUser.delete();
       setAuthDebug('Account deleted.');
       // After deletion sign out and redirect
       try { await logoutUser(); } catch {}
