@@ -49,11 +49,14 @@ async function login({ email, password }) {
 }
 
 async function logoutUser() {
-  const { auth } = window.firebase;
-  const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-  
+  const { auth, signOut } = window.firebase || {};
   try {
-    await signOut(auth);
+    if (signOut) {
+      await signOut(auth);
+    } else {
+      const mod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+      await mod.signOut(auth);
+    }
     return { ok: true };
   } catch (err) {
     return { ok: false, msg: err.message };
@@ -143,15 +146,76 @@ function initIndexPage() {
   function renderHeader() {
     if (currentUser) {
       const display = currentUser.username || currentUser.email || 'Unknown';
-      userBadge.textContent = `Logged in as ${display}`;
+      // Build account panel
       userBadge.classList.remove("muted");
       loginLink.style.display = "none";
       logoutBtn.style.display = "inline-flex";
+
+      userBadge.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:200px;">
+          <div style="font-weight:700;">${display}</div>
+          <div style="font-size:13px;color:var(--muted);">${currentUser.email || ''}</div>
+          <div style="font-size:13px;color:var(--muted);">Password: ••••• <button id="resetPwBtn" class="btn small">Reset</button></div>
+          <div style="margin-top:6px;display:flex;gap:8px;justify-content:flex-end;">
+            <button id="deleteAccountBtn" class="btn small" style="background:#2b2b2b;">Delete account</button>
+          </div>
+        </div>
+      `;
+
+      // Wire the buttons (safe to re-attach; old handlers removed by GC)
+      const resetBtn = document.getElementById('resetPwBtn');
+      if (resetBtn) resetBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await sendPasswordResetLink();
+      });
+
+      const delBtn = document.getElementById('deleteAccountBtn');
+      if (delBtn) delBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (!confirm('Delete your account? This cannot be undone.')) return;
+        await deleteAccount();
+      });
     } else {
       userBadge.textContent = "Not logged in";
       userBadge.classList.add("muted");
       loginLink.style.display = "inline-flex";
       logoutBtn.style.display = "none";
+    }
+  }
+
+  async function sendPasswordResetLink() {
+    const { auth } = window.firebase || {};
+    if (!auth || !auth.currentUser) {
+      setAuthDebug('No authenticated user to reset password for.');
+      return;
+    }
+    try {
+      const mod = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+      await mod.sendPasswordResetEmail(auth, auth.currentUser.email);
+      setAuthDebug('Password reset email sent to ' + auth.currentUser.email);
+    } catch (err) {
+      setAuthDebug('Password reset failed: ' + err.message);
+    }
+  }
+
+  async function deleteAccount() {
+    const { auth } = window.firebase || {};
+    if (!auth || !auth.currentUser) {
+      setAuthDebug('No authenticated user to delete.');
+      return;
+    }
+    try {
+      const mod = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+      await mod.deleteUser(auth.currentUser);
+      setAuthDebug('Account deleted.');
+      // After deletion sign out and redirect
+      try { await logoutUser(); } catch {}
+      window.location.href = 'login.html';
+    } catch (err) {
+      setAuthDebug('Delete failed: ' + err.message);
+      if (err.code === 'auth/requires-recent-login') {
+        setAuthDebug('Recent login required. Please sign in again and retry account deletion.');
+      }
     }
   }
 
@@ -315,7 +379,30 @@ function initLoginPage() {
     console.log('login result', res);
     setAuthDebug('login result: ' + JSON.stringify(res));
     try { setAuthDebug('auth.currentUser after login: ' + JSON.stringify(window.firebase.auth.currentUser)); } catch(e) {}
-    if (res.ok) setTimeout(() => window.location.href = "index.html", 1000);
+    if (res.ok) {
+      // Wait for Firebase to persist the auth state before redirecting.
+      try {
+        const { auth, onAuthStateChanged } = window.firebase || {};
+        if (auth && onAuthStateChanged) {
+          setAuthDebug('waiting for onAuthStateChanged to confirm login...');
+          await new Promise((resolve) => {
+            let resolved = false;
+            const un = onAuthStateChanged(auth, (user) => {
+              setAuthDebug('onAuthStateChanged during login: ' + JSON.stringify(user ? { uid: user.uid, email: user.email } : null));
+              if (user && !resolved) { resolved = true; try { un(); } catch {} ; resolve(); }
+            });
+            // fallback timeout
+            setTimeout(() => { if (!resolved) { resolved = true; try { un(); } catch {} ; resolve(); } }, 3000);
+          });
+        } else {
+          // if no listener available, small delay
+          await new Promise(r => setTimeout(r, 800));
+        }
+      } catch (e) {
+        console.warn('error waiting for auth state', e);
+      }
+      window.location.href = "index.html";
+    }
   });
 }
 

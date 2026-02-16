@@ -57,7 +57,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDp7TN2BttsFGRjYE-ZjT5t8gMl3z4c4CI",
@@ -74,7 +74,7 @@
     // Ensure auth persists across pages
     setPersistence(auth, browserLocalPersistence).catch((e) => console.warn('setPersistence failed', e));
 
-    window.firebase = { app, db, auth, getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, updateDoc, onAuthStateChanged };
+    window.firebase = { app, db, auth, getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, updateDoc, onAuthStateChanged, signOut };
   </script>
 
   <script src="app.js"></script>
