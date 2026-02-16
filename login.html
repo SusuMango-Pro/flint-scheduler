@@ -67,7 +67,9 @@
         setTimeout(() => waitForFirebaseInit(cb), 50);
       }
     }
-    waitForFirebaseInit(initLoginPage);
+    document.addEventListener('DOMContentLoaded', function() {
+      waitForFirebaseInit(initLoginPage);
+    });
   </script>
 </body>
 </html>
