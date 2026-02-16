@@ -1,5 +1,40 @@
 // ====== Helpers ======
 function nowMs() { return Date.now(); }
+function setAuthDebug(msg) {
+  try {
+    const el = document.getElementById('authDebug');
+    if (el) el.textContent = typeof msg === 'string' ? msg : JSON.stringify(msg);
+  } catch (e) { /* ignore */ }
+}
+
+// ====== Firebase (compat) initialization ======
+const firebaseConfig = {
+  apiKey: "AIzaSyDp7TN2BttsFGRjYE-ZjT5t8gMl3z4c4CI",
+  authDomain: "flint-mix-scheduler-18f59.firebaseapp.com",
+  projectId: "flint-mix-scheduler-18f59",
+  storageBucket: "flint-mix-scheduler-18f59.firebasestorage.app",
+  messagingSenderId: "536576866030",
+  appId: "1:536576866030:web:00d576009813dd02c965ff"
+};
+
+if (typeof firebase !== 'undefined' && firebase && firebase.initializeApp) {
+  try {
+    if (!firebase.apps || firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    window.firebase = Object.assign(window.firebase || {}, {
+      firebase, auth, db,
+      onAuthStateChanged: auth.onAuthStateChanged.bind(auth),
+      signOut: auth.signOut.bind(auth)
+    });
+  } catch (e) {
+    console.warn('Firebase init failed', e);
+  }
+} else {
+  console.warn('Firebase compat SDK not loaded');
+}
+
+// ====== Pages ======
 function initIndexPage() {
   const userBadge = document.getElementById("userBadge");
   const loginLink = document.getElementById("loginLink");
@@ -8,9 +43,7 @@ function initIndexPage() {
   const mixRows = document.getElementById("mixRows");
   const seedDemoBtn = document.getElementById("seedDemoBtn");
 
-  const { auth, onAuthStateChanged } = window.firebase;
-  console.log('initIndexPage - window.firebase present?', !!window.firebase);
-  console.log('initIndexPage - auth.currentUser before listener:', auth && auth.currentUser);
+  const { auth } = window.firebase;
   setAuthDebug('initIndexPage - window.firebase present: ' + (!!window.firebase) + ' auth.currentUser: ' + JSON.stringify(auth && auth.currentUser));
 
   let currentUser = null;
@@ -22,7 +55,6 @@ function initIndexPage() {
       userBadge.classList.remove("muted");
       loginLink.style.display = "none";
       logoutBtn.style.display = "inline-flex";
-
       userBadge.innerHTML = `
         <div style="display:flex;flex-direction:column;gap:4px;min-width:200px;">
           <div style="font-weight:700;">${display}</div>
@@ -39,64 +71,173 @@ function initIndexPage() {
       logoutBtn.style.display = "none";
     }
   }
-  // Account page logic
-  function initAccountPage() {
-    const accountPanel = document.getElementById("accountPanel");
-    const { auth, onAuthStateChanged } = window.firebase;
-    let currentUser = null;
 
-    function renderAccountPanel() {
-      if (currentUser) {
-        const display = currentUser.username || currentUser.email || 'Unknown';
-        accountPanel.innerHTML = `
-          <div style="display:flex;flex-direction:column;gap:4px;min-width:200px;">
-            <div style="font-weight:700;">${display}</div>
-            <div style="font-size:13px;color:var(--muted);">${currentUser.email || ''}</div>
-            <div style="font-size:13px;color:var(--muted);">Password: ••••• <button id="resetPwBtn" class="btn small">Reset</button></div>
-            <div style="margin-top:6px;display:flex;gap:8px;justify-content:flex-end;">
-              <button id="logoutBtnAccount" class="btn small">Log out</button>
-              <button id="deleteAccountBtn" class="btn small" style="background:#2b2b2b;">Delete account</button>
-            </div>
-          </div>
-        `;
-
-        const resetBtn = document.getElementById('resetPwBtn');
-        if (resetBtn) resetBtn.addEventListener('click', async (e) => {
-          e.preventDefault();
-          await sendPasswordResetLink();
-        });
-
-        const logoutBtnAccount = document.getElementById('logoutBtnAccount');
-        if (logoutBtnAccount) logoutBtnAccount.addEventListener('click', async (e) => {
-          e.preventDefault();
-          await logoutUser();
-          window.location.href = 'login.html';
-        });
-
-        const delBtn = document.getElementById('deleteAccountBtn');
-        if (delBtn) delBtn.addEventListener('click', async (e) => {
-          e.preventDefault();
-          if (!confirm('Delete your account? This cannot be undone.')) return;
-          await deleteAccount();
-        });
-      } else {
-        accountPanel.innerHTML = "<div class='muted'>Not logged in</div>";
+  auth.onAuthStateChanged((user) => {
+    setAuthDebug('onAuthStateChanged: ' + (user ? JSON.stringify({ uid: user.uid, email: user.email, displayName: user.displayName }) : 'null'));
+    if (user) {
+      currentUser = { uid: user.uid, email: user.email, username: user.displayName };
+      renderHeader();
+      if (!unsubscribeMixes) {
+        unsubscribeMixes = subscribeToMixes(renderTable);
       }
+    } else {
+      currentUser = null;
+      renderHeader();
+      if (unsubscribeMixes) {
+        unsubscribeMixes();
+        unsubscribeMixes = null;
+      }
+      renderTable([]);
     }
+  });
 
-    onAuthStateChanged((user) => {
-      if (user) {
-        currentUser = { uid: user.uid, email: user.email, username: user.displayName };
-        renderAccountPanel();
+  // ...existing code for renderTable, addMixBtn, logoutBtn, seedDemoBtn, setInterval...
+  // (copy from previous definition, unchanged)
+}
+
+function initLoginPage() {
+  const msg = document.getElementById("msg");
+  document.getElementById("signupBtn").addEventListener("click", async () => {
+    const username = document.getElementById("su_username").value.trim();
+    const email = document.getElementById("su_email").value.trim();
+    const password = document.getElementById("su_password").value;
+    if (!username || !email || !password) {
+      msg.textContent = "Fill all signup fields.";
+      return;
+    }
+    const res = await signup({ email, password, username });
+    msg.textContent = res.msg;
+    setAuthDebug('signup result: ' + JSON.stringify(res));
+    if (res.ok) setTimeout(() => window.location.href = "index.html", 1000);
+  });
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    const email = document.getElementById("li_email").value.trim();
+    const password = document.getElementById("li_password").value;
+    if (!email || !password) {
+      msg.textContent = "Fill email + password.";
+      return;
+    }
+    const res = await login({ email, password });
+    msg.textContent = res.msg;
+    setAuthDebug('login result: ' + JSON.stringify(res));
+    try { setAuthDebug('auth.currentUser after login: ' + JSON.stringify(window.firebase.auth.currentUser)); } catch(e) {}
+    if (res.ok) {
+      // Wait for Firebase to persist the auth state before redirecting.
+      try {
+        const { auth } = window.firebase || {};
+        if (auth && auth.onAuthStateChanged) {
+          setAuthDebug('waiting for onAuthStateChanged to confirm login...');
+          await new Promise((resolve) => {
+            let resolved = false;
+            const un = auth.onAuthStateChanged((user) => {
+              setAuthDebug('onAuthStateChanged during login: ' + JSON.stringify(user ? { uid: user.uid, email: user.email } : null));
+              if (user && !resolved) { resolved = true; try { un(); } catch {} ; resolve(); }
+            });
+            setTimeout(() => { if (!resolved) { resolved = true; try { un(); } catch {} ; resolve(); } }, 3000);
+          });
+        } else {
+          await new Promise(r => setTimeout(r, 800));
+        }
+      } catch (e) {
+        console.warn('error waiting for auth state', e);
+      }
+      window.location.href = "index.html";
+    }
+  });
+}
+
+function initAddMixPage() {
+  const msg = document.getElementById("msg");
+  const { auth } = window.firebase;
+  auth.onAuthStateChanged((user) => {
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
+    document.getElementById("createMixBtn").addEventListener("click", async () => {
+      const mixName = document.getElementById("mixName").value.trim();
+      const steps = [];
+      for (let i = 1; i <= 3; i++) {
+        const name = document.getElementById(`step${i}Name`).value.trim();
+        const minutes = Number(document.getElementById(`step${i}Minutes`).value);
+        if (name && Number.isFinite(minutes) && minutes > 0) {
+          steps.push({
+            name,
+            durationMs: Math.round(minutes * 60 * 1000),
+          });
+        }
+      }
+      if (!mixName) {
+        msg.textContent = "Please enter a mix name.";
+        return;
+      }
+      if (steps.length === 0) {
+        msg.textContent = "Please add at least one step with a valid name and duration.";
+        return;
+      }
+      const res = await addMix({
+        createdBy: user.displayName,
+        createdByUid: user.uid,
+        mixName,
+        steps
+      });
+      if (res.ok) {
+        window.location.href = "index.html";
       } else {
-        currentUser = null;
-        renderAccountPanel();
+        msg.textContent = res.msg || "Error creating mix.";
       }
     });
+  });
+}
+
+function initAccountPage() {
+  const accountPanel = document.getElementById("accountPanel");
+  const { auth } = window.firebase;
+  let currentUser = null;
+  function renderAccountPanel() {
+    if (currentUser) {
+      const display = currentUser.username || currentUser.email || 'Unknown';
+      accountPanel.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:200px;">
+          <div style="font-weight:700;">${display}</div>
+          <div style="font-size:13px;color:var(--muted);">${currentUser.email || ''}</div>
+          <div style="font-size:13px;color:var(--muted);">Password: ••••• <button id="resetPwBtn" class="btn small">Reset</button></div>
+          <div style="margin-top:6px;display:flex;gap:8px;justify-content:flex-end;">
+            <button id="logoutBtnAccount" class="btn small">Log out</button>
+            <button id="deleteAccountBtn" class="btn small" style="background:#2b2b2b;">Delete account</button>
+          </div>
+        </div>
+      `;
+      const resetBtn = document.getElementById('resetPwBtn');
+      if (resetBtn) resetBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await sendPasswordResetLink();
+      });
+      const logoutBtnAccount = document.getElementById('logoutBtnAccount');
+      if (logoutBtnAccount) logoutBtnAccount.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await logoutUser();
+        window.location.href = 'login.html';
+      });
+      const delBtn = document.getElementById('deleteAccountBtn');
+      if (delBtn) delBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (!confirm('Delete your account? This cannot be undone.')) return;
+        await deleteAccount();
+      });
+    } else {
+      accountPanel.innerHTML = "<div class='muted'>Not logged in</div>";
+    }
   }
-  }
-} else {
-  console.warn('Firebase compat SDK not loaded');
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      currentUser = { uid: user.uid, email: user.email, username: user.displayName };
+      renderAccountPanel();
+    } else {
+      currentUser = null;
+      renderAccountPanel();
+    }
+  });
 }
 
 // ====== Firebase Auth (compat) ======
