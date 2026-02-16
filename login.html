@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login · Mix Scheduler</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container small">
+    <header>
+      <h1>Log in</h1>
+      <p class="subtitle">Prototype account system (local only)</p>
+    </header>
+
+    <section class="card">
+      <h2>Create account</h2>
+      <div class="formRow">
+        <div class="field">
+          <label>Username</label>
+          <input id="su_username" placeholder="e.g. alex" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input id="su_email" placeholder="e.g. alex@company.com" />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input id="su_password" type="password" placeholder="prototype only" />
+        </div>
+      </div>
+      <button class="btn primary" id="signupBtn">Create account</button>
+      <p class="note">For prototype only — not secure.</p>
+    </section>
+
+    <section class="card">
+      <h2>Log in</h2>
+      <div class="formRow">
+        <div class="field">
+          <label>Username</label>
+          <input id="li_username" placeholder="e.g. alex" />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input id="li_password" type="password" />
+        </div>
+      </div>
+      <button class="btn primary" id="loginBtn">Log in</button>
+      <div class="rowEnd">
+        <a class="btn" href="index.html">← Back</a>
+      </div>
+    </section>
+
+    <div id="msg" class="msg"></div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    initLoginPage();
+  </script>
+</body>
+</html>

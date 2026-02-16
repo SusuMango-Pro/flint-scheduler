@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add mix · Mix Scheduler</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container small">
+    <header>
+      <h1>Add a new mix</h1>
+      <p class="subtitle">You must be logged in to add a mix.</p>
+    </header>
+
+    <section class="card">
+      <div class="formRow">
+        <div class="field">
+          <label>What are you mixing?</label>
+          <input id="mixName" placeholder="e.g. Batch A / Powder set #2" />
+        </div>
+
+        <div class="field">
+          <label>Total duration (minutes)</label>
+          <input id="mixMinutes" type="number" min="1" step="1" placeholder="e.g. 120" />
+          <small>Tip: 120 = 2 hours</small>
+        </div>
+      </div>
+
+      <button class="btn primary" id="createMixBtn">Create mix</button>
+      <div class="rowEnd">
+        <a class="btn" href="index.html">← Back</a>
+      </div>
+
+      <div id="msg" class="msg"></div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    initAddMixPage();
+  </script>
+</body>
+</html>

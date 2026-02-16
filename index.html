@@ -1,24 +1,58 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flint Hydrogel Scheduler</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mix Scheduler</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>Hydrogel Scheduler</h1>
-      <p class="subtitle">Track powder additions and stirring timers (Steps 1 → 3).</p>
+    <header class="topbar">
+      <div>
+        <h1>Mix Scheduler</h1>
+        <p class="subtitle">Active mixes dashboard</p>
+      </div>
+      <div class="topbar-right">
+        <div id="userBadge" class="badge muted">Not logged in</div>
+        <a class="btn" href="login.html" id="loginLink">Log in</a>
+        <button class="btn danger" id="logoutBtn" style="display:none;">Log out</button>
+        <a class="btn primary" href="add.html" id="addMixBtn">+ Add mix</a>
+      </div>
     </header>
 
     <section class="card">
-      <h2>Start / Update Schedule</h2>
+      <div class="cardHead">
+        <h2>Active mixes</h2>
+        <button class="btn" id="seedDemoBtn">Load demo</button>
+      </div>
 
-      <div class="row">
-        <div class="field">
-          <label for="powderSelect">Powder step</label>
-          <select id="powderSelect">
-            <option value="1">Powder 1</option>
-            <option value="2">Powder 2</option>
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Who</th>
+              <th>What</th>
+              <th>Started</th>
+              <th>Duration</th>
+              <th>Time left</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="mixRows"></tbody>
+        </table>
+      </div>
+
+      <p class="note">
+        Prototype: mixes + accounts are stored locally in your browser (localStorage).
+      </p>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // Page init
+    initIndexPage();
+  </script>
+</body>
+</html>
