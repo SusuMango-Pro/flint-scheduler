@@ -11,36 +11,57 @@
 </head>
     <!-- Removed modular Firebase block; using compat scripts and app.js only -->
 
-      <div class="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Who</th>
-              <th>Mix</th>
-              <th>Current Step</th>
-              <th>Progress</th>
-              <th>Time Left</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="mixRows"></tbody>
-        </table>
+  <body>
+    <div class="container">
+      <header class="topbar">
+        <div>
+          <h1>Mix Scheduler</h1>
+          <p class="subtitle">Active mixes dashboard</p>
+        </div>
+        <div class="topbar-right">
+          <div id="userBadge" class="badge muted">Not logged in</div>
+          <a class="btn" href="login.html" id="loginLink">Log in</a>
+          <button class="btn danger" id="logoutBtn" style="display:none;">Log out</button>
+          <a class="btn primary" href="add.html" id="addMixBtn">+ Add mix</a>
+        </div>
+      </header>
+
+      <div style="max-width:1100px;margin:8px auto 0;padding:0 16px;">
+        <div id="authDebug" class="msg" style="color:#9aa4b2;">auth debug: (no data)</div>
       </div>
 
-      <p class="note">
-        Multi-step mixing system. Mixes are stored in Firebase Cloud Firestore in real-time.
-      </p>
-    </section>
-  </div>
+      <section class="card">
+        <div class="cardHead">
+          <h2>Active mixes</h2>
+          <button class="btn" id="seedDemoBtn">Load demo</button>
+        </div>
 
-  <!-- Using compat Firebase scripts loaded in <head>; app.js will initialize compat firebase -->
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Who</th>
+                <th>Mix</th>
+                <th>Current Step</th>
+                <th>Progress</th>
+                <th>Time Left</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="mixRows"></tbody>
+          </table>
+        </div>
 
-  <script src="app.js"></script>
-  
-  <script>
-    // Page init
-    initIndexPage();
-  </script>
-</body>
+        <p class="note">
+          Multi-step mixing system. Mixes are stored in Firebase Cloud Firestore in real-time.
+        </p>
+      </section>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+      initIndexPage();
+    </script>
+  </body>
 </html>
