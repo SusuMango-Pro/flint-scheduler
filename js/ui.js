@@ -2,6 +2,7 @@ import { auth, db } from './firebase.js';
 import { logoutUser } from './auth.js';
 import { softDeleteMix, nextStage, createMix, subscribeMixes, subscribeMix, advanceStage } from './mixes.js';
 import { saveTemplateFromForm, subscribeTemplates, deleteTemplate } from './templates.js';
+import { notifyStageComplete, hasBeenNotified, markNotified } from './notify.js';
 
 // ===== CATEGORY COLOR UTILS =====
 const CATEGORY_COLORS = [
@@ -35,13 +36,25 @@ export function escapeHtml(text) {
 }
 
 // ===== LIVE TIMER TICKER =====
-// One global interval ticks every second and updates all timer spans in the DOM.
-// No Firestore calls, no re-renders — just DOM text updates.
+// Ticks every second, updates all timer spans, and fires a notification
+// the first time each mix stage hits zero.
 setInterval(() => {
     document.querySelectorAll('[data-end-ms]').forEach(el => {
         const end = Number(el.getAttribute('data-end-ms'));
         const remaining = Math.max(0, end - Date.now());
         el.textContent = formatTime(remaining);
+
+        if (remaining === 0) {
+            const mixId = el.getAttribute('data-mix-id');
+            const stageIndex = el.getAttribute('data-stage-index');
+            if (mixId && stageIndex !== null && !hasBeenNotified(mixId, stageIndex)) {
+                markNotified(mixId, stageIndex);
+                notifyStageComplete(
+                    el.getAttribute('data-mix-name') || 'A mix',
+                    el.getAttribute('data-stage-name') || 'Stage'
+                );
+            }
+        }
     });
 }, 1000);
 
@@ -432,7 +445,13 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
         stageDiv.innerHTML = `
       <h2 style="margin: 0 0 10px 0;">Current Stage</h2>
       <p style="margin: 5px 0;"><strong>${escapeHtml(currentStage.stageName)}</strong> (${mix.currentStageIndex + 1} of ${mix.powders.length})</p>
-      <p style="margin: 5px 0; font-size: 1.2em;"><strong>Time remaining:</strong> <span data-end-ms="${stageEnd}">${formatTime(remaining)}</span></p>
+      <p style="margin: 5px 0; font-size: 1.2em;"><strong>Time remaining:</strong> <span
+        data-end-ms="${stageEnd}"
+        data-mix-id="${mix.id}"
+        data-stage-index="${mix.currentStageIndex}"
+        data-mix-name="${escapeHtml(mix.mixName)}"
+        data-stage-name="${escapeHtml(currentStage.stageName)}"
+      >${formatTime(remaining)}</span></p>
       <p style="margin: 5px 0; color: #666;">${remaining === 0 ? "Stage complete!" : "In progress"}</p>
     `;
         mixContent.appendChild(stageDiv);
@@ -635,7 +654,6 @@ export function initIndexPage() {
             groupedByColor[key].items.sort((a, b) => a.remaining - b.remaining);
         });
 
-        const notifiedStages = {};
         Object.keys(groupedByColor).sort().forEach(categoryKey => {
             const { color, items } = groupedByColor[categoryKey];
             const groupDiv = document.createElement("div");
@@ -650,17 +668,6 @@ export function initIndexPage() {
             mixesContainer.style.cssText = "display: flex; flex-direction: column; gap: 10px;";
 
             items.forEach(mix => {
-                if (!notifiedStages[mix.id]) notifiedStages[mix.id] = {};
-                const stageKey = mix.currentStageIndex;
-                if (mix.remaining === 0 && !notifiedStages[mix.id][stageKey]) {
-                    notifiedStages[mix.id][stageKey] = true;
-                    const message = `Stage finished for mix: ${mix.mixName}`;
-                    if ("Notification" in window && Notification.permission === "granted") {
-                        new Notification(message);
-                    } else {
-                        alert(message);
-                    }
-                }
 
                 const mixItem = document.createElement("div");
                 mixItem.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; transition: background-color 0.2s;";
@@ -691,7 +698,13 @@ export function initIndexPage() {
                 details.innerHTML = `
           <strong>Stage:</strong> ${escapeHtml(mix.stageName)} (${mix.currentStageIndex + 1}/${mix.totalStages}) | 
           <strong>Creator:</strong> ${escapeHtml(mix.createdByName)} | 
-          <strong>Time left:</strong> <span data-end-ms="${Date.now() + mix.remaining}">${formatTime(mix.remaining)}</span> | 
+          <strong>Time left:</strong> <span
+            data-end-ms="${Date.now() + mix.remaining}"
+            data-mix-id="${mix.id}"
+            data-stage-index="${mix.currentStageIndex}"
+            data-mix-name="${escapeHtml(mix.mixName)}"
+            data-stage-name="${escapeHtml(mix.stageName)}"
+          >${formatTime(mix.remaining)}</span> | 
           <strong>Status:</strong> ${mix.isDone ? "Done" : "Running"}
         `;
                 infoDiv.appendChild(details);
