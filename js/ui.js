@@ -2,7 +2,11 @@ import { auth, db } from './firebase.js';
 import { logoutUser } from './auth.js';
 import { softDeleteMix, nextStage, createMix, subscribeMixes, subscribeMix, advanceStage } from './mixes.js';
 import { saveTemplateFromForm, subscribeTemplates, deleteTemplate } from './templates.js';
-import { notifyStageComplete, hasBeenNotified, markNotified } from './notify.js';
+import {
+    notifyStageComplete, hasBeenNotified, markNotified,
+    notifyWarning, hasBeenWarned, markWarned,
+    setFaviconOverdue, markCardOverdue
+} from './notify.js';
 
 // ===== CATEGORY COLOR UTILS =====
 const CATEGORY_COLORS = [
@@ -36,26 +40,70 @@ export function escapeHtml(text) {
 }
 
 // ===== LIVE TIMER TICKER =====
-// Ticks every second, updates all timer spans, and fires a notification
-// the first time each mix stage hits zero.
+// Drives features 1–5: warning, tab title, card flash, favicon badge, done banner.
+const _originalTitle = document.title;
+
 setInterval(() => {
+    let minRemaining = Infinity;
+    let anyOverdue = false;
+
     document.querySelectorAll('[data-end-ms]').forEach(el => {
         const end = Number(el.getAttribute('data-end-ms'));
         const remaining = Math.max(0, end - Date.now());
-        el.textContent = formatTime(remaining);
+        const mixId = el.getAttribute('data-mix-id');
+        const stageIndex = el.getAttribute('data-stage-index');
+        const mixName = el.getAttribute('data-mix-name') || 'A mix';
+        const stageName = el.getAttribute('data-stage-name') || 'Stage';
 
         if (remaining === 0) {
-            const mixId = el.getAttribute('data-mix-id');
-            const stageIndex = el.getAttribute('data-stage-index');
+            anyOverdue = true;
+
+            // Feature 5: Done banner — replace timer text with styled label
+            el.textContent = '⚠\uFE0F DONE';
+            el.style.color = '#d73a49';
+            el.style.fontWeight = 'bold';
+
+            // Feature 3: Flash the parent mix card
+            markCardOverdue(el);
+
+            // Completion notification (once per stage)
             if (mixId && stageIndex !== null && !hasBeenNotified(mixId, stageIndex)) {
                 markNotified(mixId, stageIndex);
-                notifyStageComplete(
-                    el.getAttribute('data-mix-name') || 'A mix',
-                    el.getAttribute('data-stage-name') || 'Stage'
-                );
+                notifyStageComplete(mixName, stageName);
             }
+        } else {
+            el.textContent = formatTime(remaining);
+
+            if (remaining <= 120_000) {
+                // Feature 1: 2-min early warning (once per stage)
+                if (mixId && stageIndex !== null && !hasBeenWarned(mixId, stageIndex)) {
+                    markWarned(mixId, stageIndex);
+                    notifyWarning(mixName, stageName, remaining);
+                }
+                // Color timer orange as visual cue
+                el.style.color = '#d39e00';
+                el.style.fontWeight = 'bold';
+            } else {
+                el.style.color = '';
+                el.style.fontWeight = '';
+            }
+
+            if (remaining < minRemaining) minRemaining = remaining;
         }
     });
+
+    // Feature 2: Tab title countdown
+    if (anyOverdue) {
+        document.title = `\u26A0\uFE0F DONE \u2014 ${_originalTitle}`;
+    } else if (minRemaining !== Infinity) {
+        document.title = `\u23F1 ${formatTime(minRemaining)} \u2014 ${_originalTitle}`;
+    } else {
+        document.title = _originalTitle;
+    }
+
+    // Feature 4: Favicon badge
+    setFaviconOverdue(anyOverdue);
+
 }, 1000);
 
 
@@ -670,6 +718,7 @@ export function initIndexPage() {
             items.forEach(mix => {
 
                 const mixItem = document.createElement("div");
+                mixItem.setAttribute('data-mix-card', ''); // needed for card flash (Feature 3)
                 mixItem.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; transition: background-color 0.2s;";
                 mixItem.onmouseover = () => mixItem.style.backgroundColor = "#f9f9f9";
                 mixItem.onmouseout = () => mixItem.style.backgroundColor = "white";
