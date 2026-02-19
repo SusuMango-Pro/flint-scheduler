@@ -132,77 +132,75 @@ function initAddMixPage() {
 
     // Create mix button
     const createMixBtn = document.getElementById("createMixBtn");
-    const createMixStatus = document.getElementById("create-mix-status");
-    if (createMixBtn && createMixStatus) {
-      createMixBtn.addEventListener("click", async () => {
-        createMixBtn.disabled = true;
-        createMixStatus.textContent = "Creating...";
-        const batchNumber = document.getElementById("batchNumber").value.trim();
-        const mixName = document.getElementById("mixName").value.trim();
-        const description = document.getElementById("mixDescription").value.trim();
-        const category = document.getElementById("mixCategory").value.trim();
+    const createMixStatus = document.getElementById("msg");
+    createMixBtn.addEventListener("click", async () => {
+      createMixBtn.disabled = true;
+      createMixStatus.textContent = "Creating...";
+      const batchNumber = document.getElementById("batchNumber").value.trim();
+      const mixName = document.getElementById("mixName").value.trim();
+      const description = document.getElementById("mixDescription").value.trim();
+      const category = document.getElementById("mixCategory").value.trim();
 
-        const powders = [];
-        const stageInputs = powderStagesList.querySelectorAll(".stage-row");
+      const powders = [];
+      const stageInputs = powderStagesList.querySelectorAll(".stage-row");
 
-        stageInputs.forEach((row, idx) => {
-          const stageName = row.querySelector(".stage-name").value.trim();
-          const minutes = Number(row.querySelector(".stage-minutes").value);
+      stageInputs.forEach((row, idx) => {
+        const stageName = row.querySelector(".stage-name").value.trim();
+        const minutes = Number(row.querySelector(".stage-minutes").value);
 
-          if (stageName && minutes > 0) {
-            powders.push({
-              stageName,
-              durationMs: minutes * 60000
-            });
-          }
-        });
-
-        if (!mixName) {
-          createMixStatus.textContent = "Enter mix name";
-          createMixBtn.disabled = false;
-          return;
-        }
-
-        if (powders.length === 0) {
-          createMixStatus.textContent = "Add at least one stage";
-          createMixBtn.disabled = false;
-          return;
-        }
-
-        try {
-          // Show loading overlay
-          let overlay = document.createElement('div');
-          overlay.className = 'loading-overlay';
-          overlay.innerHTML = '<div>Creating mix...</div>';
-          document.body.appendChild(overlay);
-
-          await db.collection("mixes").add({
-            createdByUid: user.uid,
-            createdByEmail: user.email,
-            createdByName: user.displayName || null,
-            mixName,
-            batchNumber: batchNumber || null,
-            description: description || null,
-            category: category || null,
-            color: getCategoryColor(category),
-            powders,
-            currentStageIndex: 0,
-            currentStageStartedAtMs: Date.now(),
-            createdAtMs: Date.now(),
-            isDeleted: false
+        if (stageName && minutes > 0) {
+          powders.push({
+            stageName,
+            durationMs: minutes * 60000
           });
-          createMixStatus.textContent = "Mix created!";
-          window.location.href = "index.html";
-        } catch (e) {
-          console.error(e);
-          sessionStorage.setItem('lastErrorMsg', e.message || 'Could not create mix');
-          window.location.href = 'console.html';
-        } finally {
-          createMixBtn.disabled = false;
-          setTimeout(() => { createMixStatus.textContent = ""; }, 3000);
         }
       });
-    }
+
+      if (!mixName) {
+        createMixStatus.textContent = "Enter mix name";
+        createMixBtn.disabled = false;
+        return;
+      }
+
+      if (powders.length === 0) {
+        createMixStatus.textContent = "Add at least one stage";
+        createMixBtn.disabled = false;
+        return;
+      }
+
+      try {
+        // Show loading overlay
+        let overlay = document.createElement('div');
+        overlay.className = 'loading-overlay';
+        overlay.innerHTML = '<div>Creating mix...</div>';
+        document.body.appendChild(overlay);
+
+        await db.collection("mixes").add({
+          createdByUid: user.uid,
+          createdByEmail: user.email,
+          createdByName: user.displayName || null,
+          mixName,
+          batchNumber: batchNumber || null,
+          description: description || null,
+          category: category || null,
+          color: getCategoryColor(category),
+          powders,
+          currentStageIndex: 0,
+          currentStageStartedAtMs: Date.now(),
+          createdAtMs: Date.now(),
+          isDeleted: false
+        });
+        createMixStatus.textContent = "Mix created!";
+        window.location.href = "index.html";
+      } catch (e) {
+        console.error(e);
+        sessionStorage.setItem('lastErrorMsg', e.message || 'Could not create mix');
+        window.location.href = 'console.html';
+      } finally {
+        createMixBtn.disabled = false;
+        setTimeout(() => { createMixStatus.textContent = ""; }, 3000);
+      }
+    });
 
     // Load templates
     loadAndRenderTemplates(user.uid, templatesList);
@@ -399,7 +397,7 @@ function loadAndRenderTemplates(userId, container) {
             let batchNumber = prompt("Batch number (optional):", "");
             if (batchNumber === null) return; // Cancelled
             batchNumber = batchNumber.trim();
-            
+
             // Show loading overlay
             let overlay = document.createElement('div');
             overlay.className = 'loading-overlay';
@@ -742,7 +740,7 @@ function initIndexPage() {
     if (mixesState) mixesState.textContent = "";
 
     if (mixes.length === 0) {
-      const emptyMsg = currentTab === "team" 
+      const emptyMsg = currentTab === "team"
         ? "No mixes from teammates yet"
         : "No mixes created by you yet. Start by adding one!";
       if (mixesState) mixesState.textContent = emptyMsg;
@@ -753,7 +751,7 @@ function initIndexPage() {
 
     // Group by category
     const groupedByColor = {};
-    
+
     mixes.forEach((mix) => {
       // Skip deleted mixes
       if (mix.isDeleted) return;
@@ -763,15 +761,15 @@ function initIndexPage() {
 
       const end = mix.currentStageStartedAtMs + stage.durationMs;
       const remaining = Math.max(0, end - now);
-      
+
       const color = mix.color || "#666666";
       const category = mix.category || "Uncategorised";
       const groupKey = category;
-      
+
       if (!groupedByColor[groupKey]) {
         groupedByColor[groupKey] = { color, items: [] };
       }
-      
+
       groupedByColor[groupKey].items.push({
         id: mix.id,
         createdByName: mix.createdByName || mix.createdByEmail || "Unknown",
@@ -833,7 +831,7 @@ function initIndexPage() {
         infoDiv.style.flex = "1";
         infoDiv.style.cursor = "pointer";
         infoDiv.onclick = () => window.location.href = "mix.html?id=" + mix.id;
-        
+
         const title = document.createElement("strong");
         let titleText = escapeHtml(mix.mixName);
         if (mix.batchNumber) {
@@ -842,14 +840,14 @@ function initIndexPage() {
         title.textContent = titleText;
         title.style.color = '#111';
         infoDiv.appendChild(title);
-        
+
         if (mix.category) {
           const catSpan = document.createElement("span");
           catSpan.style.cssText = "display: block; font-size: 0.85em; color: #666; margin-top: 4px;";
           catSpan.textContent = "Category: " + escapeHtml(mix.category);
           infoDiv.appendChild(catSpan);
         }
-        
+
         const details = document.createElement("span");
         details.style.cssText = "display: block; font-size: 0.9em; color: #888; margin-top: 4px;";
         details.innerHTML = `
@@ -1040,11 +1038,11 @@ function rgbToHex(rgb) {
   // Parse rgb(r, g, b) or rgba(r, g, b, a)
   const match = rgb.match(/\d+/g);
   if (!match || match.length < 3) return "#666666";
-  
+
   const r = parseInt(match[0]);
   const g = parseInt(match[1]);
   const b = parseInt(match[2]);
-  
+
   return "#" + [r, g, b].map(x => {
     const hex = x.toString(16);
     return hex.length === 1 ? "0" + hex : hex;
