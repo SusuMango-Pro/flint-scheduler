@@ -53,18 +53,26 @@ function initLoginPage() {
     }
   });
 
-  document.getElementById("loginBtn")?.addEventListener("click", async () => {
-    const email = document.getElementById("li_email").value.trim();
-    const password = document.getElementById("li_password").value;
-
-    try {
-      await login(email, password);
-      msg.textContent = "Logged in!";
-      window.location.href = "index.html";
-    } catch (e) {
-      msg.textContent = e.message;
-    }
-  });
+  const loginBtn = document.getElementById("loginBtn");
+  const loginStatus = document.getElementById("login-status");
+  if (loginBtn && loginStatus) {
+    loginBtn.addEventListener("click", async () => {
+      const email = document.getElementById("li_email").value.trim();
+      const password = document.getElementById("li_password").value;
+      loginBtn.disabled = true;
+      loginStatus.textContent = "Logging in...";
+      try {
+        await login(email, password);
+        loginStatus.textContent = "";
+        msg.textContent = "Logged in!";
+        window.location.href = "index.html";
+      } catch (e) {
+        loginStatus.textContent = 'Login failed: ' + (e.message || 'Unknown error');
+      } finally {
+        loginBtn.disabled = false;
+      }
+    });
+  }
 }
 
 
@@ -115,59 +123,70 @@ function initAddMixPage() {
     });
 
     // Create mix button
-    document.getElementById("createMixBtn")?.addEventListener("click", async () => {
-      const mixName = document.getElementById("mixName").value.trim();
-      const description = document.getElementById("mixDescription").value.trim();
-      const category = document.getElementById("mixCategory").value.trim();
-      const color = document.getElementById("mixColor").value.trim();
+    const createMixBtn = document.getElementById("createMixBtn");
+    const createMixStatus = document.getElementById("create-mix-status");
+    if (createMixBtn && createMixStatus) {
+      createMixBtn.addEventListener("click", async () => {
+        createMixBtn.disabled = true;
+        createMixStatus.textContent = "Creating...";
+        const mixName = document.getElementById("mixName").value.trim();
+        const description = document.getElementById("mixDescription").value.trim();
+        const category = document.getElementById("mixCategory").value.trim();
+        const color = document.getElementById("mixColor").value.trim();
 
-      const powders = [];
-      const stageInputs = powderStagesList.querySelectorAll(".stage-row");
+        const powders = [];
+        const stageInputs = powderStagesList.querySelectorAll(".stage-row");
 
-      stageInputs.forEach((row, idx) => {
-        const stageName = row.querySelector(".stage-name").value.trim();
-        const minutes = Number(row.querySelector(".stage-minutes").value);
+        stageInputs.forEach((row, idx) => {
+          const stageName = row.querySelector(".stage-name").value.trim();
+          const minutes = Number(row.querySelector(".stage-minutes").value);
 
-        if (stageName && minutes > 0) {
-          powders.push({
-            stageName,
-            durationMs: minutes * 60000
-          });
-        }
-      });
-
-      if (!mixName) {
-        alert("Enter mix name");
-        return;
-      }
-
-      if (powders.length === 0) {
-        alert("Add at least one stage");
-        return;
-      }
-
-      try {
-        await db.collection("mixes").add({
-          createdByUid: user.uid,
-          createdByEmail: user.email,
-          createdByName: user.displayName || null,
-          mixName,
-          description: description || null,
-          category: category || null,
-          color: color || "#666666",
-          powders,
-          currentStageIndex: 0,
-          currentStageStartedAtMs: Date.now(),
-          createdAtMs: Date.now(),
-          isDeleted: false
+          if (stageName && minutes > 0) {
+            powders.push({
+              stageName,
+              durationMs: minutes * 60000
+            });
+          }
         });
 
-        window.location.href = "index.html";
-      } catch (e) {
-        console.error(e);
-        alert(e.message);
-      }
-    });
+        if (!mixName) {
+          createMixStatus.textContent = "Enter mix name";
+          createMixBtn.disabled = false;
+          return;
+        }
+
+        if (powders.length === 0) {
+          createMixStatus.textContent = "Add at least one stage";
+          createMixBtn.disabled = false;
+          return;
+        }
+
+        try {
+          await db.collection("mixes").add({
+            createdByUid: user.uid,
+            createdByEmail: user.email,
+            createdByName: user.displayName || null,
+            mixName,
+            description: description || null,
+            category: category || null,
+            color: color || "#666666",
+            powders,
+            currentStageIndex: 0,
+            currentStageStartedAtMs: Date.now(),
+            createdAtMs: Date.now(),
+            isDeleted: false
+          });
+          createMixStatus.textContent = "Mix created!";
+          window.location.href = "index.html";
+        } catch (e) {
+          console.error(e);
+          createMixStatus.textContent = e.message || "Could not create mix.";
+        } finally {
+          createMixBtn.disabled = false;
+          setTimeout(() => { createMixStatus.textContent = ""; }, 3000);
+        }
+      });
+    }
 
     // Load templates
     loadAndRenderTemplates(user.uid, templatesList);
@@ -584,8 +603,14 @@ function initIndexPage() {
   const loginLink = document.getElementById("loginLink");
   const logoutBtn = document.getElementById("logoutBtn");
   const mixRows = document.getElementById("mixRows");
+  const mixesState = document.getElementById("mixes-state");
   const teamTabBtn = document.getElementById("teamTabBtn");
   const myTabBtn = document.getElementById("myTabBtn");
+
+  // Notification permission request (once per session)
+  if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission();
+  }
 
   let currentUser = null;
   let currentTab = "team"; // "team" or "my"
@@ -624,6 +649,10 @@ function initIndexPage() {
   }
 
   auth.onAuthStateChanged((user) => {
+    if (mixesState) {
+      mixesState.textContent = "Loading mixes...";
+      mixRows.innerHTML = "";
+    }
     currentUser = user;
 
     if (user) {
@@ -638,6 +667,7 @@ function initIndexPage() {
         .where("isDeleted", "==", false)
         .onSnapshot(
           (snapshot) => {
+            if (mixesState) mixesState.textContent = "";
             allMixes = [];
             snapshot.forEach((doc) => {
               allMixes.push({ id: doc.id, ...doc.data() });
@@ -645,6 +675,7 @@ function initIndexPage() {
             renderMixes();
           },
           (error) => {
+            if (mixesState) mixesState.textContent = "Error loading mixes.";
             console.error("Mixes subscription error:", error);
           }
         );
@@ -656,6 +687,7 @@ function initIndexPage() {
       logoutBtn.style.display = "none";
       teamTabBtn.style.display = "none";
       myTabBtn.style.display = "none";
+      if (mixesState) mixesState.textContent = "";
       mixRows.innerHTML = "<p style='color: #999;'>Please log in to view mixes</p>";
 
       if (unsubscribe) unsubscribe();
@@ -678,12 +710,13 @@ function initIndexPage() {
 
   function renderTable(mixes) {
     mixRows.innerHTML = "";
+    if (mixesState) mixesState.textContent = "";
 
     if (mixes.length === 0) {
       const emptyMsg = currentTab === "team" 
         ? "No mixes from teammates yet"
         : "No mixes created by you yet. Start by adding one!";
-      mixRows.innerHTML = `<p style='color: #999;'>${emptyMsg}</p>`;
+      if (mixesState) mixesState.textContent = emptyMsg;
       return;
     }
 
@@ -731,6 +764,8 @@ function initIndexPage() {
     });
 
     // Render groups
+    // Notification: Only notify once per stage per mix (per page load)
+    const notifiedStages = {};
     Object.keys(groupedByColor).sort().forEach(color => {
       const groupDiv = document.createElement("div");
       groupDiv.style.cssText = "border-left: 5px solid " + color + "; padding: 15px; background: #fafafa; border-radius: 4px;";
@@ -744,6 +779,19 @@ function initIndexPage() {
       mixesContainer.style.cssText = "display: flex; flex-direction: column; gap: 10px;";
 
       groupedByColor[color].forEach(mix => {
+        // Notification logic
+        if (!notifiedStages[mix.id]) notifiedStages[mix.id] = {};
+        const stageKey = mix.currentStageIndex;
+        if (mix.remaining === 0 && !notifiedStages[mix.id][stageKey]) {
+          notifiedStages[mix.id][stageKey] = true;
+          const message = `Stage finished for mix: ${mix.mixName}`;
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification(message);
+          } else {
+            alert(message);
+          }
+        }
+
         const mixItem = document.createElement("div");
         mixItem.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; transition: background-color 0.2s;";
         mixItem.onmouseover = () => mixItem.style.backgroundColor = "#f9f9f9";
@@ -822,6 +870,18 @@ function initIndexPage() {
       groupDiv.appendChild(mixesContainer);
       mixRows.appendChild(groupDiv);
     });
+      // Notification: Only notify once per stage per page load
+      if (!window._mixStageNotified) window._mixStageNotified = {};
+      const notifyKey = mix.id + ':' + mix.currentStageIndex;
+      if (remaining === 0 && !window._mixStageNotified[notifyKey]) {
+        window._mixStageNotified[notifyKey] = true;
+        const message = `Stage finished for mix: ${mix.mixName}`;
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification(message);
+        } else {
+          alert(message);
+        }
+      }
   }
 }
 
