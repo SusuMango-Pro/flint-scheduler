@@ -64,7 +64,7 @@ setInterval(() => {
         const mixId = el.getAttribute('data-mix-id');
         const stageIndex = el.getAttribute('data-stage-index');
         const mixName = el.getAttribute('data-mix-name') || 'A mix';
-        const stageName = el.getAttribute('data-stage-name') || 'Stage';
+        const stageName = el.getAttribute('data-stage-name') || 'Component';
 
         if (remaining === 0) {
             anyOverdue = true;
@@ -279,15 +279,15 @@ function addComponentStageRow(container, stageNum, canRemove) {
     nameField.className = "field";
     nameField.style.flex = "1";
     nameField.innerHTML = `
-    <label>Stage ${stageNum} - Name</label>
+    <label>Component ${stageNum} - Name</label>
     <input class="stage-name" placeholder="e.g. Component ${stageNum}" value="Component ${stageNum}" />
   `;
 
-    const hoursField = document.createElement("div");
-    hoursField.className = "field";
-    hoursField.style.flex = "1";
-    hoursField.innerHTML = `
-    <label>Stage ${stageNum} - Duration (minutes)</label>
+    const minutesField = document.createElement("div");
+    minutesField.className = "field";
+    minutesField.style.flex = "1";
+    minutesField.innerHTML = `
+    <label>Component ${stageNum} - Duration (minutes)</label>
     <input class="stage-minutes" type="number" min="1" step="1" placeholder="e.g. 30" />
   `;
 
@@ -367,7 +367,7 @@ function loadAndRenderTemplates(userId, container) {
             info.innerHTML = `
         <strong style='color:#111;'>${template.templateName}</strong>
         ${template.category ? `<br><small style="color: #666;">${template.category}</small>` : ""}
-        <br><small style="color: #999;">${stages.length} stages</small>
+        <br><small style="color: #999;">${stages.length} components</small>
       `;
 
             const btns = document.createElement("div");
@@ -497,7 +497,7 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
     if (mix.description) {
         const descDiv = document.createElement("div");
         descDiv.style.cssText = "margin-bottom: 20px; padding: 12px; background: #f5f5f5; border-radius: 4px;";
-        descDiv.innerHTML = `<p style="margin: 0;"><strong>Description:</strong> ${escapeHtml(mix.description)}</p>`;
+        descDiv.innerHTML = `<p style="margin: 0; color: #000;"><strong>Description:</strong> ${escapeHtml(mix.description)}</p>`;
         mixContent.appendChild(descDiv);
     }
 
@@ -506,8 +506,8 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
         const stageDiv = document.createElement("div");
         stageDiv.style.cssText = "margin-bottom: 20px; padding: 15px; background: #e8f4f8; border-radius: 4px; border-left: 4px solid #17a2b8;";
         stageDiv.innerHTML = `
-      <h2 style="margin: 0 0 10px 0;">Current Stage</h2>
-      <p style="margin: 5px 0; font-size: 1.1em;"><strong>${escapeHtml(currentStage.stageName)}</strong> (${mix.currentStageIndex + 1} of ${stages.length})</p>
+      <h2 style="margin: 0 0 10px 0;">Current Component</h2>
+      <p style="margin: 5px 0; font-size: 1.1em; color: #000;"><strong>${escapeHtml(currentStage.stageName)}</strong> (${mix.currentStageIndex + 1} of ${stages.length})</p>
       <p style="margin: 5px 0; font-size: 1.2em;"><strong>Time remaining:</strong> <span
         data-end-ms="${stageEnd}"
         data-mix-id="${mix.id}"
@@ -515,7 +515,7 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
         data-mix-name="${escapeHtml(mix.mixName)}"
         data-stage-name="${escapeHtml(currentStage.stageName)}"
       >${formatTime(remaining)}</span></p>
-      <p style="margin: 5px 0; color: #666;">${remaining === 0 ? "Stage complete!" : "In progress"}</p>
+      <p style="margin: 5px 0; color: #666;">${remaining === 0 ? "Component complete!" : "In progress"}</p>
     `;
         mixContent.appendChild(stageDiv);
     }
@@ -523,7 +523,7 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
     // All stages list
     const stagesDiv = document.createElement("div");
     stagesDiv.style.cssText = "margin-bottom: 20px;";
-    stagesDiv.innerHTML = "<h3>All Stages (Components)</h3>";
+    stagesDiv.innerHTML = "<h3>All Components</h3>";
 
     const stagesList = document.createElement("ul");
     stagesList.style.cssText = "list-style: none; padding: 0; margin: 0;";
@@ -551,7 +551,7 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
     if (mix.currentStageIndex < stages.length - 1) {
         const nextBtn = document.createElement("button");
         nextBtn.className = "btn primary";
-        nextBtn.textContent = "Next Stage";
+        nextBtn.textContent = "Next Component";
         nextBtn.addEventListener("click", async () => {
             try {
                 await advanceStage(mixId, mix.currentStageIndex, stages.length);
@@ -564,7 +564,7 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
     } else {
         const completeMsg = document.createElement("p");
         completeMsg.style.cssText = "color: #28a745; font-weight: bold; margin: 0;";
-        completeMsg.textContent = "All stages complete!";
+        completeMsg.textContent = "All components complete!";
         actionsDiv.appendChild(completeMsg);
     }
 
@@ -760,7 +760,7 @@ export function initIndexPage() {
                 const details = document.createElement("span");
                 details.style.cssText = "display: block; font-size: 0.9em; color: #888; margin-top: 4px;";
                 details.innerHTML = `
-          <strong>Stage:</strong> ${escapeHtml(mix.stageName)} (${mix.currentStageIndex + 1}/${mix.totalStages}) | 
+          <strong>Component:</strong> ${escapeHtml(mix.stageName)} (${mix.currentStageIndex + 1}/${mix.totalStages}) | 
           <strong>Creator:</strong> ${escapeHtml(mix.createdByName)} | 
           <strong>Time left:</strong> <span
             data-end-ms="${Date.now() + mix.remaining}"
@@ -831,8 +831,8 @@ export function initAccountPage() {
         }
 
         panel.innerHTML = `
-      <p><strong>${user.displayName || user.email}</strong></p>
-      <button id="logoutBtn2">Logout</button>
+                < p > <strong>${user.displayName || user.email}</strong></p >
+                <button id="logoutBtn2">Logout</button>
     `;
 
         document.getElementById("logoutBtn2").addEventListener("click", async () => {

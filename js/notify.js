@@ -68,7 +68,7 @@ export function playWarningBeep() {
 export function notifyStageComplete(mixName, stageName) {
     playCompletionBeep();
     if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(`⏱ Stage complete: ${mixName}`, {
+        new Notification(`⏱ Component complete: ${mixName}`, {
             body: `"${stageName}" has finished!`,
             silent: true
         });
@@ -79,7 +79,7 @@ export function notifyWarning(mixName, stageName, remainingMs) {
     playWarningBeep();
     if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(`⚠️ ${formatTime(remainingMs)} left: ${mixName}`, {
-            body: `Stage "${stageName}" is almost done!`,
+            body: `Component "${stageName}" is almost done!`,
             silent: true
         });
     }
@@ -181,7 +181,7 @@ export function initNotifyUI() {
         to   { transform:translateY(0);    opacity:1; }
       }
     </style>
-    <span>🔔 Enable alerts for stage timers?</span>
+    <span>🔔 Enable alerts for component timers?</span>
     <button id="notify-allow-btn" style="background:#2f81f7;border:none;border-radius:6px;
       color:white;padding:6px 14px;cursor:pointer;font-size:13px;font-weight:700;">Enable</button>
     <button id="notify-dismiss-btn" style="background:none;border:none;color:#9aa4b2;
@@ -196,7 +196,7 @@ export function initNotifyUI() {
         banner.remove();
         if (result === 'granted') {
             new Notification('Notifications enabled ✓', {
-                body: 'You will hear a beep and see an alert when a stage finishes.'
+                body: 'You will hear a beep and see an alert when a component finishes.'
             });
         }
     });
