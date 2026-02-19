@@ -292,7 +292,7 @@ function addComponentStageRow(container, stageNum, canRemove) {
   `;
 
     row.appendChild(nameField);
-    row.appendChild(hoursField);
+    row.appendChild(minutesField);
 
     if (canRemove) {
         const removeBtn = document.createElement("button");
@@ -329,7 +329,7 @@ function addTemplateComponentRow(container, stageNum, canRemove) {
   `;
 
     row.appendChild(nameField);
-    row.appendChild(hoursField);
+    row.appendChild(minutesField);
 
     if (canRemove) {
         const removeBtn = document.createElement("button");
@@ -366,8 +366,8 @@ function loadAndRenderTemplates(userId, container) {
             info.style.flex = "1";
             info.innerHTML = `
         <strong style='color:#111;'>${template.templateName}</strong>
-        ${template.category ? `<br><small style="color: #666;">${template.category}</small>` : ""}
-        <br><small style="color: #999;">${stages.length} components</small>
+        ${template.category ? `<br><small style="color: #000;">${template.category}</small>` : ""}
+        <br><small style="color: #000;">${stages.length} components</small>
       `;
 
             const btns = document.createElement("div");
@@ -488,8 +488,8 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
     if (mix.batchNumber) titleHtml = escapeHtml(mix.batchNumber) + " - " + titleHtml;
     header.innerHTML = `
     <h1 style="margin: 0 0 5px 0; color: ${mix.color || '#333'};">${titleHtml}</h1>
-    ${mix.category ? `<p style="margin: 5px 0; color: #666;"><strong>Category:</strong> ${escapeHtml(mix.category)}</p>` : ""}
-    <p style="margin: 5px 0; color: #999;"><strong>Created by:</strong> ${escapeHtml(mix.createdByName || mix.createdByEmail || "Unknown")}</p>
+    ${mix.category ? `<p style="margin: 5px 0; color: #000;"><strong>Category:</strong> ${escapeHtml(mix.category)}</p>` : ""}
+    <p style="margin: 5px 0; color: #000;"><strong>Created by:</strong> ${escapeHtml(mix.createdByName || mix.createdByEmail || "Unknown")}</p>
   `;
     mixContent.appendChild(header);
 
@@ -515,7 +515,7 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
         data-mix-name="${escapeHtml(mix.mixName)}"
         data-stage-name="${escapeHtml(currentStage.stageName)}"
       >${formatTime(remaining)}</span></p>
-      <p style="margin: 5px 0; color: #666;">${remaining === 0 ? "Component complete!" : "In progress"}</p>
+      <p style="margin: 5px 0; color: #000;">${remaining === 0 ? "Component complete!" : "In progress"}</p>
     `;
         mixContent.appendChild(stageDiv);
     }
@@ -752,13 +752,13 @@ export function initIndexPage() {
 
                 if (mix.category) {
                     const catSpan = document.createElement("span");
-                    catSpan.style.cssText = "display: block; font-size: 0.85em; color: #666; margin-top: 4px;";
+                    catSpan.style.cssText = "display: block; font-size: 0.85em; color: #000; margin-top: 4px;";
                     catSpan.textContent = "Category: " + escapeHtml(mix.category);
                     infoDiv.appendChild(catSpan);
                 }
 
                 const details = document.createElement("span");
-                details.style.cssText = "display: block; font-size: 0.9em; color: #888; margin-top: 4px;";
+                details.style.cssText = "display: block; font-size: 0.9em; color: #000; margin-top: 4px;";
                 details.innerHTML = `
           <strong>Component:</strong> ${escapeHtml(mix.stageName)} (${mix.currentStageIndex + 1}/${mix.totalStages}) | 
           <strong>Creator:</strong> ${escapeHtml(mix.createdByName)} | 
