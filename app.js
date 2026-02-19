@@ -35,6 +35,23 @@ async function logoutUser() {
 }
 
 
+// ===== CATEGORY COLOR UTILS =====
+const CATEGORY_COLORS = [
+  '#2f81f7', '#ff5c5c', '#3fb950', '#f2cc60', '#a259f7', '#ffb347', '#00b8d9', '#ff69b4', '#6e40c9', '#ff8c00', '#20b2aa', '#e9967a', '#4682b4', '#bada55', '#b22222', '#008080', '#b8860b', '#556b2f', '#8b008b', '#483d8b'
+];
+
+function getCategoryColor(category) {
+  if (!category) return '#666666';
+  const key = category.trim().toLowerCase();
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = key.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const idx = Math.abs(hash) % CATEGORY_COLORS.length;
+  return CATEGORY_COLORS[idx];
+}
+
+
 // ===== LOGIN PAGE =====
 function initLoginPage() {
   const msg = document.getElementById("msg");
