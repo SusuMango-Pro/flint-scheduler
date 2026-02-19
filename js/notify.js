@@ -77,9 +77,8 @@ export function notifyStageComplete(mixName, stageName) {
 
 export function notifyWarning(mixName, stageName, remainingMs) {
     playWarningBeep();
-    const hours = (remainingMs / 3600000).toFixed(2);
     if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(`⚠️ ${hours} hr left: ${mixName}`, {
+        new Notification(`⚠️ ${formatTime(remainingMs)} left: ${mixName}`, {
             body: `Stage "${stageName}" is almost done!`,
             silent: true
         });

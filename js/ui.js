@@ -26,12 +26,21 @@ export function getCategoryColor(category) {
 
 // ===== UTIL =====
 export function formatTime(ms) {
-    const s = Math.floor(ms / 1000);
-    const m = Math.floor(s / 60);
-    const h = Math.floor(m / 60);
-    const sec = s % 60;
-    const min = m % 60;
-    return `${h}h ${min}m ${sec}s`;
+    const sTotal = Math.floor(ms / 1000);
+    const mTotal = Math.floor(sTotal / 60);
+    const hTotal = Math.floor(mTotal / 60);
+    const d = Math.floor(hTotal / 24);
+
+    const s = sTotal % 60;
+    const m = mTotal % 60;
+    const h = hTotal % 24;
+
+    const parts = [];
+    if (d > 0) parts.push(`${d}d`);
+    if (h > 0 || d > 0) parts.push(`${h}h`);
+    if (m > 0 || h > 0 || d > 0) parts.push(`${m}m`);
+    parts.push(`${s}s`);
+    return parts.join(' ');
 }
 
 export function escapeHtml(text) {
@@ -123,15 +132,15 @@ export function initAddMixPage() {
 
         const templatesSection = document.getElementById("templatesSection");
         const templatesList = document.getElementById("templatesList");
-        const powderStagesList = document.getElementById("powderStagesList");
+        const componentStagesList = document.getElementById("componentStagesList");
 
         // Initialize with 1 component stage
-        addComponentStageRow(powderStagesList, 1, false);
+        addComponentStageRow(componentStagesList, 1, false);
 
         // Add component stage button
-        document.getElementById("addPowderStageBtn")?.addEventListener("click", () => {
+        document.getElementById("addComponentStageBtn")?.addEventListener("click", () => {
             stageCounter++;
-            addComponentStageRow(powderStagesList, stageCounter, true);
+            addComponentStageRow(componentStagesList, stageCounter, true);
         });
 
         // Create mix button
@@ -146,13 +155,13 @@ export function initAddMixPage() {
             const category = document.getElementById("mixCategory").value.trim();
 
             const components = [];
-            const stageInputs = powderStagesList.querySelectorAll(".stage-row");
+            const stageInputs = componentStagesList.querySelectorAll(".stage-row");
 
             stageInputs.forEach((row) => {
                 const stageName = row.querySelector(".stage-name").value.trim();
-                const hours = Number(row.querySelector(".stage-minutes").value);
-                if (stageName && hours > 0) {
-                    components.push({ stageName, durationMs: hours * 3600000 });
+                const minutes = Number(row.querySelector(".stage-minutes").value);
+                if (stageName && minutes > 0) {
+                    components.push({ stageName, durationMs: minutes * 60000 });
                 }
             });
 
@@ -161,7 +170,7 @@ export function initAddMixPage() {
                 createMixBtn.disabled = false;
                 return;
             }
-            if (powders.length === 0) {
+            if (components.length === 0) {
                 createMixStatus.textContent = "Add at least one stage";
                 createMixBtn.disabled = false;
                 return;
@@ -198,9 +207,9 @@ export function initAddMixPage() {
         loadAndRenderTemplates(user.uid, templatesList);
 
         // Add template component stage button
-        document.getElementById("addTemplatePowderBtn")?.addEventListener("click", () => {
+        document.getElementById("addTemplateComponentBtn")?.addEventListener("click", () => {
             templateStageCounter++;
-            addTemplateComponentRow(document.getElementById("templatePowdersList"), templateStageCounter, true);
+            addTemplateComponentRow(document.getElementById("templateComponentsList"), templateStageCounter, true);
         });
 
         // Save template button
@@ -210,11 +219,11 @@ export function initAddMixPage() {
             const description = document.getElementById("templateDescription").value.trim();
 
             const components = [];
-            document.getElementById("templatePowdersList").querySelectorAll(".template-stage-row").forEach((row) => {
+            document.getElementById("templateComponentsList").querySelectorAll(".template-stage-row").forEach((row) => {
                 const stageName = row.querySelector(".template-stage-name").value.trim();
-                const hours = Number(row.querySelector(".template-stage-minutes").value);
-                if (stageName && hours > 0) {
-                    components.push({ stageName, durationMs: hours * 3600000 });
+                const minutes = Number(row.querySelector(".template-stage-minutes").value);
+                if (stageName && minutes > 0) {
+                    components.push({ stageName, durationMs: minutes * 60000 });
                 }
             });
 
@@ -239,9 +248,9 @@ export function initAddMixPage() {
                 document.getElementById("templateName").value = "";
                 document.getElementById("templateCategory").value = "";
                 document.getElementById("templateDescription").value = "";
-                document.getElementById("templatePowdersList").innerHTML = "";
+                document.getElementById("templateComponentsList").innerHTML = "";
                 templateStageCounter = 1;
-                addTemplateComponentRow(document.getElementById("templatePowdersList"), 1, false);
+                addTemplateComponentRow(document.getElementById("templateComponentsList"), 1, false);
 
                 document.getElementById("templateMsg").textContent = "Template saved!";
                 setTimeout(() => { document.getElementById("templateMsg").textContent = ""; }, 2000);
@@ -257,7 +266,7 @@ export function initAddMixPage() {
         templatesSection.style.display = "block";
 
         // Initialize template component list with 1 stage
-        addTemplateComponentRow(document.getElementById("templatePowdersList"), 1, false);
+        addTemplateComponentRow(document.getElementById("templateComponentsList"), 1, false);
     });
 }
 
@@ -278,8 +287,8 @@ function addComponentStageRow(container, stageNum, canRemove) {
     hoursField.className = "field";
     hoursField.style.flex = "1";
     hoursField.innerHTML = `
-    <label>Stage ${stageNum} - Duration (hours)</label>
-    <input class="stage-minutes" type="number" min="0.01" step="0.01" placeholder="e.g. 0.5" />
+    <label>Stage ${stageNum} - Duration (minutes)</label>
+    <input class="stage-minutes" type="number" min="1" step="1" placeholder="e.g. 30" />
   `;
 
     row.appendChild(nameField);
@@ -315,8 +324,8 @@ function addTemplateComponentRow(container, stageNum, canRemove) {
     hoursField.className = "field";
     hoursField.style.flex = "1";
     hoursField.innerHTML = `
-    <label>Component ${stageNum} - Duration (hours)</label>
-    <input class="template-stage-minutes" type="number" min="0.01" step="0.01" placeholder="e.g. 0.5" />
+    <label>Component ${stageNum} - Duration (minutes)</label>
+    <input class="template-stage-minutes" type="number" min="1" step="1" placeholder="e.g. 30" />
   `;
 
     row.appendChild(nameField);
@@ -522,9 +531,8 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
       padding: 10px; margin-bottom: 8px; background: ${idx === mix.currentStageIndex ? '#fff3cd' : '#f9f9f9'};
       border-left: 3px solid ${idx === mix.currentStageIndex ? '#ffc107' : '#ddd'}; border-radius: 2px;
     `;
-        const durationHr = (stage.durationMs / 3600000).toFixed(2);
         li.innerHTML = `
-      <strong>${escapeHtml(stage.stageName)}</strong> - ${durationHr} hr
+      <strong>${escapeHtml(stage.stageName)}</strong> - ${formatTime(stage.durationMs)}
       ${idx === mix.currentStageIndex ? '<span style="margin-left: 10px; color: #d39e00; font-weight: bold;">← Current</span>' : ''}
     `;
         stagesList.appendChild(li);
