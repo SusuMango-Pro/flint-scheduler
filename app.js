@@ -170,6 +170,12 @@ function initAddMixPage() {
         }
 
         try {
+          // Show loading overlay
+          let overlay = document.createElement('div');
+          overlay.className = 'loading-overlay';
+          overlay.innerHTML = '<div>Creating mix...</div>';
+          document.body.appendChild(overlay);
+
           await db.collection("mixes").add({
             createdByUid: user.uid,
             createdByEmail: user.email,
@@ -189,7 +195,8 @@ function initAddMixPage() {
           window.location.href = "index.html";
         } catch (e) {
           console.error(e);
-          createMixStatus.textContent = e.message || "Could not create mix.";
+          sessionStorage.setItem('lastErrorMsg', e.message || 'Could not create mix');
+          window.location.href = 'console.html';
         } finally {
           createMixBtn.disabled = false;
           setTimeout(() => { createMixStatus.textContent = ""; }, 3000);
@@ -392,6 +399,13 @@ function loadAndRenderTemplates(userId, container) {
             let batchNumber = prompt("Batch number (optional):", "");
             if (batchNumber === null) return; // Cancelled
             batchNumber = batchNumber.trim();
+            
+            // Show loading overlay
+            let overlay = document.createElement('div');
+            overlay.className = 'loading-overlay';
+            overlay.innerHTML = '<div>Creating mix...</div>';
+            document.body.appendChild(overlay);
+
             await db.collection("mixes").add({
               createdByUid: user.uid,
               createdByEmail: user.email,
@@ -410,7 +424,8 @@ function loadAndRenderTemplates(userId, container) {
             window.location.href = "index.html";
           } catch (e) {
             console.error(e);
-            alert(e.message);
+            sessionStorage.setItem('lastErrorMsg', e.message || 'Could not create mix from template');
+            window.location.href = 'console.html';
           }
         });
 
