@@ -780,6 +780,7 @@ function initIndexPage() {
         id: mix.id,
         createdByName: mix.createdByName || mix.createdByEmail || "Unknown",
         mixName: mix.mixName,
+        batchNumber: mix.batchNumber || null,
         category: mix.category,
         description: mix.description,
         stageName: stage.stageName,
