@@ -368,9 +368,9 @@ function loadAndRenderTemplates(userId, container) {
         const info = document.createElement("div");
         info.style.flex = "1";
         info.innerHTML = `
-          <strong>${template.templateName}</strong>
-          ${template.category ? `<br><small style="color: #666;">${template.category}</small>` : ""}
-          <br><small style="color: #999;">${template.powders.length} stages</small>
+          <strong style='color:#111;'>${template.templateName}</strong>
+          ${template.category ? `<br><small style=\"color: #666;\">${template.category}</small>` : ""}
+          <br><small style=\"color: #999;\">${template.powders.length} stages</small>
         `;
 
         const btns = document.createElement("div");
