@@ -58,8 +58,9 @@ setInterval(() => {
         if (remaining === 0) {
             anyOverdue = true;
 
-            // Feature 5: Done banner — replace timer text with styled label
-            el.textContent = '⚠\uFE0F DONE';
+            // Feature 5: Done banner — replace timer text with styled label + overdue time
+            const overdueMs = Date.now() - end;
+            el.textContent = `⚠\uFE0F DONE (+ ${formatTime(overdueMs)})`;
             el.style.color = '#d73a49';
             el.style.fontWeight = 'bold';
 
