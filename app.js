@@ -751,7 +751,7 @@ function initIndexPage() {
 
     const now = Date.now();
 
-    // Group by color
+    // Group by category
     const groupedByColor = {};
     
     mixes.forEach((mix) => {
@@ -765,13 +765,14 @@ function initIndexPage() {
       const remaining = Math.max(0, end - now);
       
       const color = mix.color || "#666666";
-      const groupKey = color;
+      const category = mix.category || "Uncategorised";
+      const groupKey = category;
       
       if (!groupedByColor[groupKey]) {
-        groupedByColor[groupKey] = [];
+        groupedByColor[groupKey] = { color, items: [] };
       }
       
-      groupedByColor[groupKey].push({
+      groupedByColor[groupKey].items.push({
         id: mix.id,
         createdByName: mix.createdByName || mix.createdByEmail || "Unknown",
         mixName: mix.mixName,
@@ -784,31 +785,32 @@ function initIndexPage() {
         remaining,
         isDone: remaining === 0,
         createdByUid: mix.createdByUid,
-        color: mix.color
+        color
       });
     });
 
     // Sort each group by time remaining (ascending)
-    Object.keys(groupedByColor).forEach(color => {
-      groupedByColor[color].sort((a, b) => a.remaining - b.remaining);
+    Object.keys(groupedByColor).forEach(key => {
+      groupedByColor[key].items.sort((a, b) => a.remaining - b.remaining);
     });
 
     // Render groups
     // Notification: Only notify once per stage per mix (per page load)
     const notifiedStages = {};
-    Object.keys(groupedByColor).sort().forEach(color => {
+    Object.keys(groupedByColor).sort().forEach(categoryKey => {
+      const { color, items } = groupedByColor[categoryKey];
       const groupDiv = document.createElement("div");
       groupDiv.style.cssText = "border-left: 5px solid " + color + "; padding: 15px; background: #fafafa; border-radius: 4px;";
 
       const heading = document.createElement("h3");
       heading.style.cssText = "margin-top: 0; margin-bottom: 15px; color: " + color + ";";
-      heading.textContent = "Color: " + color;
+      heading.textContent = categoryKey;
       groupDiv.appendChild(heading);
 
       const mixesContainer = document.createElement("div");
       mixesContainer.style.cssText = "display: flex; flex-direction: column; gap: 10px;";
 
-      groupedByColor[color].forEach(mix => {
+      items.forEach(mix => {
         // Notification logic
         if (!notifiedStages[mix.id]) notifiedStages[mix.id] = {};
         const stageKey = mix.currentStageIndex;
@@ -905,18 +907,6 @@ function initIndexPage() {
       groupDiv.appendChild(mixesContainer);
       mixRows.appendChild(groupDiv);
     });
-      // Notification: Only notify once per stage per page load
-      if (!window._mixStageNotified) window._mixStageNotified = {};
-      const notifyKey = mix.id + ':' + mix.currentStageIndex;
-      if (remaining === 0 && !window._mixStageNotified[notifyKey]) {
-        window._mixStageNotified[notifyKey] = true;
-        const message = `Stage finished for mix: ${mix.mixName}`;
-        if ("Notification" in window && Notification.permission === "granted") {
-          new Notification(message);
-        } else {
-          alert(message);
-        }
-      }
   }
 }
 
