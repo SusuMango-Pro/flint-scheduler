@@ -394,11 +394,18 @@ function loadAndRenderTemplates(userId, container) {
         quickAddBtn.addEventListener("click", async () => {
           try {
             const user = auth.currentUser;
-            const newMix = await db.collection("mixes").add({
+            let mixName = prompt("Name for this mix:", template.templateName);
+            if (mixName === null) return; // Cancelled
+            mixName = mixName.trim();
+            if (!mixName) {
+              alert("Mix name is required.");
+              return;
+            }
+            await db.collection("mixes").add({
               createdByUid: user.uid,
               createdByEmail: user.email,
               createdByName: user.displayName || null,
-              mixName: template.templateName,
+              mixName: mixName,
               description: template.description || null,
               category: template.category || null,
               color: template.color || "#666666",
