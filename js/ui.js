@@ -34,6 +34,17 @@ export function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// ===== LIVE TIMER TICKER =====
+// One global interval ticks every second and updates all timer spans in the DOM.
+// No Firestore calls, no re-renders — just DOM text updates.
+setInterval(() => {
+    document.querySelectorAll('[data-end-ms]').forEach(el => {
+        const end = Number(el.getAttribute('data-end-ms'));
+        const remaining = Math.max(0, end - Date.now());
+        el.textContent = formatTime(remaining);
+    });
+}, 1000);
+
 
 // ===== ADD MIX PAGE =====
 export function initAddMixPage() {
@@ -421,7 +432,7 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
         stageDiv.innerHTML = `
       <h2 style="margin: 0 0 10px 0;">Current Stage</h2>
       <p style="margin: 5px 0;"><strong>${escapeHtml(currentStage.stageName)}</strong> (${mix.currentStageIndex + 1} of ${mix.powders.length})</p>
-      <p style="margin: 5px 0; font-size: 1.2em;"><strong>Time remaining:</strong> ${formatTime(remaining)}</p>
+      <p style="margin: 5px 0; font-size: 1.2em;"><strong>Time remaining:</strong> <span data-end-ms="${stageEnd}">${formatTime(remaining)}</span></p>
       <p style="margin: 5px 0; color: #666;">${remaining === 0 ? "Stage complete!" : "In progress"}</p>
     `;
         mixContent.appendChild(stageDiv);
@@ -680,7 +691,7 @@ export function initIndexPage() {
                 details.innerHTML = `
           <strong>Stage:</strong> ${escapeHtml(mix.stageName)} (${mix.currentStageIndex + 1}/${mix.totalStages}) | 
           <strong>Creator:</strong> ${escapeHtml(mix.createdByName)} | 
-          <strong>Time left:</strong> ${formatTime(mix.remaining)} | 
+          <strong>Time left:</strong> <span data-end-ms="${Date.now() + mix.remaining}">${formatTime(mix.remaining)}</span> | 
           <strong>Status:</strong> ${mix.isDone ? "Done" : "Running"}
         `;
                 infoDiv.appendChild(details);
