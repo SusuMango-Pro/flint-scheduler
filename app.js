@@ -140,10 +140,10 @@ function initAddMixPage() {
       createMixBtn.addEventListener("click", async () => {
         createMixBtn.disabled = true;
         createMixStatus.textContent = "Creating...";
+        const batchNumber = document.getElementById("batchNumber").value.trim();
         const mixName = document.getElementById("mixName").value.trim();
         const description = document.getElementById("mixDescription").value.trim();
         const category = document.getElementById("mixCategory").value.trim();
-        const color = document.getElementById("mixColor").value.trim();
 
         const powders = [];
         const stageInputs = powderStagesList.querySelectorAll(".stage-row");
@@ -178,9 +178,10 @@ function initAddMixPage() {
             createdByEmail: user.email,
             createdByName: user.displayName || null,
             mixName,
+            batchNumber: batchNumber || null,
             description: description || null,
             category: category || null,
-            color: color || "#666666",
+            color: getCategoryColor(category),
             powders,
             currentStageIndex: 0,
             currentStageStartedAtMs: Date.now(),
@@ -391,21 +392,18 @@ function loadAndRenderTemplates(userId, container) {
         quickAddBtn.addEventListener("click", async () => {
           try {
             const user = auth.currentUser;
-            let mixName = prompt("Name for this mix:", template.templateName);
-            if (mixName === null) return; // Cancelled
-            mixName = mixName.trim();
-            if (!mixName) {
-              alert("Mix name is required.");
-              return;
-            }
+            let batchNumber = prompt("Batch number (optional):", "");
+            if (batchNumber === null) return; // Cancelled
+            batchNumber = batchNumber.trim();
             await db.collection("mixes").add({
               createdByUid: user.uid,
               createdByEmail: user.email,
               createdByName: user.displayName || null,
-              mixName: mixName,
+              mixName: template.templateName,
+              batchNumber: batchNumber || null,
               description: template.description || null,
               category: template.category || null,
-              color: template.color || "#666666",
+              color: getCategoryColor(template.category),
               powders: template.powders,
               currentStageIndex: 0,
               currentStageStartedAtMs: Date.now(),
@@ -506,8 +504,12 @@ function initMixDetailPage() {
     // Header with color
     const header = document.createElement("div");
     header.style.cssText = "margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid " + (mix.color || "#666666");
+    let titleHtml = escapeHtml(mix.mixName);
+    if (mix.batchNumber) {
+      titleHtml = escapeHtml(mix.batchNumber) + " - " + titleHtml;
+    }
     header.innerHTML = `
-      <h1 style="margin: 0 0 5px 0; color: ${mix.color || '#333'};">${escapeHtml(mix.mixName)}</h1>
+      <h1 style="margin: 0 0 5px 0; color: ${mix.color || '#333'};">${titleHtml}</h1>
       ${mix.category ? `<p style="margin: 5px 0; color: #666;"><strong>Category:</strong> ${escapeHtml(mix.category)}</p>` : ""}
       <p style="margin: 5px 0; color: #999;"><strong>Created by:</strong> ${escapeHtml(mix.createdByName || mix.createdByEmail || "Unknown")}</p>
     `;
@@ -818,7 +820,12 @@ function initIndexPage() {
         infoDiv.onclick = () => window.location.href = "mix.html?id=" + mix.id;
         
         const title = document.createElement("strong");
-        title.textContent = escapeHtml(mix.mixName);
+        let titleText = escapeHtml(mix.mixName);
+        if (mix.batchNumber) {
+          titleText = escapeHtml(mix.batchNumber) + " - " + titleText;
+        }
+        title.textContent = titleText;
+        title.style.color = '#111';
         infoDiv.appendChild(title);
         
         if (mix.category) {
