@@ -118,28 +118,8 @@ function initAddMixPage() {
     const templatesSection = document.getElementById("templatesSection");
     const templatesList = document.getElementById("templatesList");
     const powderStagesList = document.getElementById("powderStagesList");
-    const mixColorInput = document.getElementById("mixColor");
-    const templateColorInput = document.getElementById("templateColor");
 
-    // Color preset buttons for main mix form
-    document.querySelectorAll(".colorPreset")?.forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        const bgColor = window.getComputedStyle(btn).backgroundColor;
-        const hex = rgbToHex(bgColor);
-        mixColorInput.value = hex;
-      });
-    });
-
-    // Color preset buttons for template form
-    document.querySelectorAll(".templateColorPreset")?.forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        const bgColor = window.getComputedStyle(btn).backgroundColor;
-        const hex = rgbToHex(bgColor);
-        templateColorInput.value = hex;
-      });
-    });
+    // Color picker UI removed - colors now assigned by category
 
     // Initialize with 1 powder stage
     addPowderStageRow(powderStagesList, 1, false);
