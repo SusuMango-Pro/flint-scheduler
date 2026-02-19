@@ -212,7 +212,6 @@ function initAddMixPage() {
     document.getElementById("saveTemplateBtn")?.addEventListener("click", async () => {
       const templateName = document.getElementById("templateName").value.trim();
       const category = document.getElementById("templateCategory").value.trim();
-      const color = document.getElementById("templateColor").value.trim();
       const description = document.getElementById("templateDescription").value.trim();
 
       const powders = [];
@@ -245,7 +244,6 @@ function initAddMixPage() {
           userId: user.uid,
           templateName,
           category: category || null,
-          color: color || "#666666",
           description: description || null,
           powders,
           createdAtMs: Date.now()
@@ -254,7 +252,6 @@ function initAddMixPage() {
         // Reset form
         document.getElementById("templateName").value = "";
         document.getElementById("templateCategory").value = "";
-        document.getElementById("templateColor").value = "#666666";
         document.getElementById("templateDescription").value = "";
         document.getElementById("templatePowdersList").innerHTML = "";
         templateStageCounter = 1;
