@@ -358,6 +358,7 @@ function loadAndRenderTemplates(userId, container) {
 
         snapshot.forEach((doc) => {
             const template = doc.data();
+            const stages = template.components || template.powders || [];
             const item = document.createElement("div");
             item.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f5f5f5; border-radius: 4px; border-left: 4px solid " + (template.color || "#666666") + ";";
 
@@ -366,7 +367,7 @@ function loadAndRenderTemplates(userId, container) {
             info.innerHTML = `
         <strong style='color:#111;'>${template.templateName}</strong>
         ${template.category ? `<br><small style="color: #666;">${template.category}</small>` : ""}
-        <br><small style="color: #999;">${template.components.length} stages</small>
+        <br><small style="color: #999;">${stages.length} stages</small>
       `;
 
             const btns = document.createElement("div");
@@ -388,13 +389,14 @@ function loadAndRenderTemplates(userId, container) {
                     overlay.innerHTML = '<div>Creating mix...</div>';
                     document.body.appendChild(overlay);
 
+                    const stages = template.components || template.powders || [];
                     await createMix(user, {
                         mixName: template.templateName,
                         batchNumber: batchNumber || null,
                         description: template.description || null,
                         category: template.category || null,
                         color: getCategoryColor(template.category),
-                        components: template.components
+                        components: stages
                     });
                     window.location.href = "index.html";
                 } catch (e) {
@@ -474,7 +476,8 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
     errorMsg.textContent = "";
 
     const now = Date.now();
-    const currentStage = mix.components[mix.currentStageIndex];
+    const stages = mix.components || mix.powders || [];
+    const currentStage = stages[mix.currentStageIndex];
     const stageEnd = mix.currentStageStartedAtMs + (currentStage?.durationMs || 0);
     const remaining = Math.max(0, stageEnd - now);
 
@@ -504,7 +507,7 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
         stageDiv.style.cssText = "margin-bottom: 20px; padding: 15px; background: #e8f4f8; border-radius: 4px; border-left: 4px solid #17a2b8;";
         stageDiv.innerHTML = `
       <h2 style="margin: 0 0 10px 0;">Current Stage</h2>
-      <p style="margin: 5px 0;"><strong>${escapeHtml(currentStage.stageName)}</strong> (${mix.currentStageIndex + 1} of ${mix.components.length})</p>
+      <p style="margin: 5px 0; font-size: 1.1em;"><strong>${escapeHtml(currentStage.stageName)}</strong> (${mix.currentStageIndex + 1} of ${stages.length})</p>
       <p style="margin: 5px 0; font-size: 1.2em;"><strong>Time remaining:</strong> <span
         data-end-ms="${stageEnd}"
         data-mix-id="${mix.id}"
@@ -525,7 +528,7 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
     const stagesList = document.createElement("ul");
     stagesList.style.cssText = "list-style: none; padding: 0; margin: 0;";
 
-    mix.components.forEach((stage, idx) => {
+    stages.forEach((stage, idx) => {
         const li = document.createElement("li");
         li.style.cssText = `
       padding: 10px; margin-bottom: 8px; background: ${idx === mix.currentStageIndex ? '#fff3cd' : '#f9f9f9'};
@@ -545,13 +548,13 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
     const actionsDiv = document.createElement("div");
     actionsDiv.style.cssText = "display: flex; gap: 10px; margin-top: 20px;";
 
-    if (mix.currentStageIndex < mix.components.length - 1) {
+    if (mix.currentStageIndex < stages.length - 1) {
         const nextBtn = document.createElement("button");
         nextBtn.className = "btn primary";
         nextBtn.textContent = "Next Stage";
         nextBtn.addEventListener("click", async () => {
             try {
-                await advanceStage(mixId, mix.currentStageIndex, mix.components.length);
+                await advanceStage(mixId, mix.currentStageIndex, stages.length);
             } catch (e) {
                 console.error(e);
                 errorMsg.textContent = "Error advancing stage: " + e.message;
@@ -682,7 +685,8 @@ export function initIndexPage() {
 
         mixes.forEach((mix) => {
             if (mix.isDeleted) return;
-            const stage = mix.components[mix.currentStageIndex];
+            const stages = mix.components || mix.powders || [];
+            const stage = stages[mix.currentStageIndex];
             if (!stage) return;
 
             const end = mix.currentStageStartedAtMs + stage.durationMs;
@@ -701,7 +705,7 @@ export function initIndexPage() {
                 description: mix.description,
                 stageName: stage.stageName,
                 currentStageIndex: mix.currentStageIndex,
-                totalStages: mix.components.length,
+                totalStages: stages.length,
                 remaining,
                 isDone: remaining === 0,
                 createdByUid: mix.createdByUid,
