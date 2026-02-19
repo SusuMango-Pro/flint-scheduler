@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Error Console · Mix Scheduler</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container small">
+    <header>
+      <h1>Error Console</h1>
+      <p class="subtitle">An error occurred</p>
+    </header>
+    <section class="card">
+      <div id="consoleErrorMsg" style="color:#d9534f; font-size:1.1em; margin-bottom:20px;"></div>
+      <a class="btn" href="index.html">← Back to Dashboard</a>
+    </section>
+  </div>
+  <script>
+    // Show error from sessionStorage
+    const msg = sessionStorage.getItem('lastErrorMsg');
+    document.getElementById('consoleErrorMsg').textContent = msg || 'Unknown error.';
+  </script>
+</body>
+</html>

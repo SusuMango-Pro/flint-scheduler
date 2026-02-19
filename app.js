@@ -61,15 +61,26 @@ function initLoginPage() {
       const password = document.getElementById("li_password").value;
       loginBtn.disabled = true;
       loginStatus.textContent = "Logging in...";
+
+      // Show loading overlay
+      let overlay = document.createElement('div');
+      overlay.className = 'loading-overlay';
+      overlay.innerHTML = '<div>Logging you in...</div>';
+      document.body.appendChild(overlay);
+
       try {
         await login(email, password);
         loginStatus.textContent = "";
         msg.textContent = "Logged in!";
         window.location.href = "index.html";
       } catch (e) {
-        loginStatus.textContent = 'Login failed: ' + (e.message || 'Unknown error');
+        // Store error and redirect to console page
+        sessionStorage.setItem('lastErrorMsg', e.message || 'Unknown error');
+        window.location.href = 'console.html';
       } finally {
         loginBtn.disabled = false;
+        // Remove overlay if still present
+        if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
       }
     });
   }
