@@ -1,14 +1,16 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Add mix · Mix Scheduler</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="style.css" />
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
+
 <body>
   <div class="container small">
     <header>
@@ -79,15 +81,16 @@
       <div class="formRow">
         <div class="field">
           <label>Description (optional)</label>
-          <textarea id="mixDescription" placeholder="Optional notes about this mix" style="resize: vertical; min-height: 60px;"></textarea>
+          <textarea id="mixDescription" placeholder="Optional notes about this mix"
+            style="resize: vertical; min-height: 60px;"></textarea>
         </div>
         <!-- Color picker removed: color is now assigned by category automatically. -->
       </div>
 
       <h3 style="margin-top: 20px; margin-bottom: 10px;">Mixing Stages (Powders)</h3>
-      
+
       <div id="powderStagesList"></div>
-      
+
       <button class="btn" id="addPowderStageBtn" style="margin-top: 10px;">+ Add powder stage</button>
 
       <button class="btn primary" id="createMixBtn" style="margin-top: 20px;">Create mix</button>
@@ -99,20 +102,7 @@
     </section>
   </div>
 
-  <!-- Using compat Firebase scripts loaded in <head>; app.js will initialize compat firebase -->
-
-  <script src="app.js"></script>
-  <script>
-    function waitForFirebaseInit(cb) {
-      if (window.firebase && window.firebase.auth) {
-        cb();
-      } else {
-        setTimeout(() => waitForFirebaseInit(cb), 50);
-      }
-    }
-    document.addEventListener('DOMContentLoaded', function() {
-      waitForFirebaseInit(initAddMixPage);
-    });
-  </script>
+  <script type="module" src="main.js"></script>
 </body>
+
 </html>

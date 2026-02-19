@@ -1,14 +1,16 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login · Mix Scheduler</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="style.css" />
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
+
 <body>
   <div class="container small">
     <header>
@@ -57,20 +59,7 @@
     <div id="msg" class="msg"></div>
   </div>
 
-  <!-- Using compat Firebase scripts loaded in <head>; app.js will initialize compat firebase -->
-
-  <script src="app.js"></script>
-  <script>
-    function waitForFirebaseInit(cb) {
-      if (window.firebase && window.firebase.auth) {
-        cb();
-      } else {
-        setTimeout(() => waitForFirebaseInit(cb), 50);
-      }
-    }
-    document.addEventListener('DOMContentLoaded', function() {
-      waitForFirebaseInit(initLoginPage);
-    });
-  </script>
+  <script type="module" src="main.js"></script>
 </body>
+
 </html>
