@@ -28,8 +28,10 @@ export function getCategoryColor(category) {
 export function formatTime(ms) {
     const s = Math.floor(ms / 1000);
     const m = Math.floor(s / 60);
+    const h = Math.floor(m / 60);
     const sec = s % 60;
-    return `${m}m ${sec}s`;
+    const min = m % 60;
+    return `${h}h ${min}m ${sec}s`;
 }
 
 export function escapeHtml(text) {
@@ -123,13 +125,13 @@ export function initAddMixPage() {
         const templatesList = document.getElementById("templatesList");
         const powderStagesList = document.getElementById("powderStagesList");
 
-        // Initialize with 1 powder stage
-        addPowderStageRow(powderStagesList, 1, false);
+        // Initialize with 1 component stage
+        addComponentStageRow(powderStagesList, 1, false);
 
-        // Add powder stage button
+        // Add component stage button
         document.getElementById("addPowderStageBtn")?.addEventListener("click", () => {
             stageCounter++;
-            addPowderStageRow(powderStagesList, stageCounter, true);
+            addComponentStageRow(powderStagesList, stageCounter, true);
         });
 
         // Create mix button
@@ -143,14 +145,14 @@ export function initAddMixPage() {
             const description = document.getElementById("mixDescription").value.trim();
             const category = document.getElementById("mixCategory").value.trim();
 
-            const powders = [];
+            const components = [];
             const stageInputs = powderStagesList.querySelectorAll(".stage-row");
 
             stageInputs.forEach((row) => {
                 const stageName = row.querySelector(".stage-name").value.trim();
-                const minutes = Number(row.querySelector(".stage-minutes").value);
-                if (stageName && minutes > 0) {
-                    powders.push({ stageName, durationMs: minutes * 60000 });
+                const hours = Number(row.querySelector(".stage-minutes").value);
+                if (stageName && hours > 0) {
+                    components.push({ stageName, durationMs: hours * 3600000 });
                 }
             });
 
@@ -177,7 +179,7 @@ export function initAddMixPage() {
                     description: description || null,
                     category: category || null,
                     color: getCategoryColor(category),
-                    powders
+                    components
                 });
 
                 createMixStatus.textContent = "Mix created!";
@@ -195,10 +197,10 @@ export function initAddMixPage() {
         // Load templates
         loadAndRenderTemplates(user.uid, templatesList);
 
-        // Add template powder stage button
+        // Add template component stage button
         document.getElementById("addTemplatePowderBtn")?.addEventListener("click", () => {
             templateStageCounter++;
-            addTemplatePowderRow(document.getElementById("templatePowdersList"), templateStageCounter, true);
+            addTemplateComponentRow(document.getElementById("templatePowdersList"), templateStageCounter, true);
         });
 
         // Save template button
@@ -207,12 +209,12 @@ export function initAddMixPage() {
             const category = document.getElementById("templateCategory").value.trim();
             const description = document.getElementById("templateDescription").value.trim();
 
-            const powders = [];
+            const components = [];
             document.getElementById("templatePowdersList").querySelectorAll(".template-stage-row").forEach((row) => {
                 const stageName = row.querySelector(".template-stage-name").value.trim();
-                const minutes = Number(row.querySelector(".template-stage-minutes").value);
-                if (stageName && minutes > 0) {
-                    powders.push({ stageName, durationMs: minutes * 60000 });
+                const hours = Number(row.querySelector(".template-stage-minutes").value);
+                if (stageName && hours > 0) {
+                    components.push({ stageName, durationMs: hours * 3600000 });
                 }
             });
 
@@ -220,8 +222,8 @@ export function initAddMixPage() {
                 document.getElementById("templateMsg").textContent = "Template name is required";
                 return;
             }
-            if (powders.length === 0) {
-                document.getElementById("templateMsg").textContent = "Add at least one powder stage";
+            if (components.length === 0) {
+                document.getElementById("templateMsg").textContent = "Add at least one component stage";
                 return;
             }
 
@@ -230,7 +232,7 @@ export function initAddMixPage() {
                     templateName,
                     category: category || null,
                     description: description || null,
-                    powders
+                    components
                 });
 
                 // Reset form
@@ -239,7 +241,7 @@ export function initAddMixPage() {
                 document.getElementById("templateDescription").value = "";
                 document.getElementById("templatePowdersList").innerHTML = "";
                 templateStageCounter = 1;
-                addTemplatePowderRow(document.getElementById("templatePowdersList"), 1, false);
+                addTemplateComponentRow(document.getElementById("templatePowdersList"), 1, false);
 
                 document.getElementById("templateMsg").textContent = "Template saved!";
                 setTimeout(() => { document.getElementById("templateMsg").textContent = ""; }, 2000);
@@ -254,12 +256,12 @@ export function initAddMixPage() {
         // Show templates section
         templatesSection.style.display = "block";
 
-        // Initialize template powder list with 1 stage
-        addTemplatePowderRow(document.getElementById("templatePowdersList"), 1, false);
+        // Initialize template component list with 1 stage
+        addTemplateComponentRow(document.getElementById("templatePowdersList"), 1, false);
     });
 }
 
-function addPowderStageRow(container, stageNum, canRemove) {
+function addComponentStageRow(container, stageNum, canRemove) {
     const row = document.createElement("div");
     row.className = "stage-row";
     row.style.cssText = "display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end;";
@@ -269,19 +271,19 @@ function addPowderStageRow(container, stageNum, canRemove) {
     nameField.style.flex = "1";
     nameField.innerHTML = `
     <label>Stage ${stageNum} - Name</label>
-    <input class="stage-name" placeholder="e.g. Powder ${stageNum}" value="Powder ${stageNum}" />
+    <input class="stage-name" placeholder="e.g. Component ${stageNum}" value="Component ${stageNum}" />
   `;
 
-    const minutesField = document.createElement("div");
-    minutesField.className = "field";
-    minutesField.style.flex = "1";
-    minutesField.innerHTML = `
-    <label>Stage ${stageNum} - Duration (minutes)</label>
-    <input class="stage-minutes" type="number" min="1" step="1" placeholder="e.g. 30" />
+    const hoursField = document.createElement("div");
+    hoursField.className = "field";
+    hoursField.style.flex = "1";
+    hoursField.innerHTML = `
+    <label>Stage ${stageNum} - Duration (hours)</label>
+    <input class="stage-minutes" type="number" min="0.01" step="0.01" placeholder="e.g. 0.5" />
   `;
 
     row.appendChild(nameField);
-    row.appendChild(minutesField);
+    row.appendChild(hoursField);
 
     if (canRemove) {
         const removeBtn = document.createElement("button");
@@ -296,7 +298,7 @@ function addPowderStageRow(container, stageNum, canRemove) {
     container.appendChild(row);
 }
 
-function addTemplatePowderRow(container, stageNum, canRemove) {
+function addTemplateComponentRow(container, stageNum, canRemove) {
     const row = document.createElement("div");
     row.className = "template-stage-row";
     row.style.cssText = "display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end;";
@@ -305,20 +307,20 @@ function addTemplatePowderRow(container, stageNum, canRemove) {
     nameField.className = "field";
     nameField.style.flex = "1";
     nameField.innerHTML = `
-    <label>Powder ${stageNum} - Name</label>
-    <input class="template-stage-name" placeholder="e.g. Powder ${stageNum}" value="Powder ${stageNum}" />
+    <label>Component ${stageNum} - Name</label>
+    <input class="template-stage-name" placeholder="e.g. Component ${stageNum}" value="Component ${stageNum}" />
   `;
 
-    const minutesField = document.createElement("div");
-    minutesField.className = "field";
-    minutesField.style.flex = "1";
-    minutesField.innerHTML = `
-    <label>Powder ${stageNum} - Duration (minutes)</label>
-    <input class="template-stage-minutes" type="number" min="1" step="1" placeholder="e.g. 30" />
+    const hoursField = document.createElement("div");
+    hoursField.className = "field";
+    hoursField.style.flex = "1";
+    hoursField.innerHTML = `
+    <label>Component ${stageNum} - Duration (hours)</label>
+    <input class="template-stage-minutes" type="number" min="0.01" step="0.01" placeholder="e.g. 0.5" />
   `;
 
     row.appendChild(nameField);
-    row.appendChild(minutesField);
+    row.appendChild(hoursField);
 
     if (canRemove) {
         const removeBtn = document.createElement("button");
@@ -355,7 +357,7 @@ function loadAndRenderTemplates(userId, container) {
             info.innerHTML = `
         <strong style='color:#111;'>${template.templateName}</strong>
         ${template.category ? `<br><small style="color: #666;">${template.category}</small>` : ""}
-        <br><small style="color: #999;">${template.powders.length} stages</small>
+        <br><small style="color: #999;">${template.components.length} stages</small>
       `;
 
             const btns = document.createElement("div");
@@ -383,7 +385,7 @@ function loadAndRenderTemplates(userId, container) {
                         description: template.description || null,
                         category: template.category || null,
                         color: getCategoryColor(template.category),
-                        powders: template.powders
+                        components: template.components
                     });
                     window.location.href = "index.html";
                 } catch (e) {
@@ -463,7 +465,7 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
     errorMsg.textContent = "";
 
     const now = Date.now();
-    const currentStage = mix.powders[mix.currentStageIndex];
+    const currentStage = mix.components[mix.currentStageIndex];
     const stageEnd = mix.currentStageStartedAtMs + (currentStage?.durationMs || 0);
     const remaining = Math.max(0, stageEnd - now);
 
@@ -493,7 +495,7 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
         stageDiv.style.cssText = "margin-bottom: 20px; padding: 15px; background: #e8f4f8; border-radius: 4px; border-left: 4px solid #17a2b8;";
         stageDiv.innerHTML = `
       <h2 style="margin: 0 0 10px 0;">Current Stage</h2>
-      <p style="margin: 5px 0;"><strong>${escapeHtml(currentStage.stageName)}</strong> (${mix.currentStageIndex + 1} of ${mix.powders.length})</p>
+      <p style="margin: 5px 0;"><strong>${escapeHtml(currentStage.stageName)}</strong> (${mix.currentStageIndex + 1} of ${mix.components.length})</p>
       <p style="margin: 5px 0; font-size: 1.2em;"><strong>Time remaining:</strong> <span
         data-end-ms="${stageEnd}"
         data-mix-id="${mix.id}"
@@ -509,20 +511,20 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
     // All stages list
     const stagesDiv = document.createElement("div");
     stagesDiv.style.cssText = "margin-bottom: 20px;";
-    stagesDiv.innerHTML = "<h3>All Stages</h3>";
+    stagesDiv.innerHTML = "<h3>All Stages (Components)</h3>";
 
     const stagesList = document.createElement("ul");
     stagesList.style.cssText = "list-style: none; padding: 0; margin: 0;";
 
-    mix.powders.forEach((stage, idx) => {
+    mix.components.forEach((stage, idx) => {
         const li = document.createElement("li");
         li.style.cssText = `
       padding: 10px; margin-bottom: 8px; background: ${idx === mix.currentStageIndex ? '#fff3cd' : '#f9f9f9'};
       border-left: 3px solid ${idx === mix.currentStageIndex ? '#ffc107' : '#ddd'}; border-radius: 2px;
     `;
-        const durationMin = Math.floor(stage.durationMs / 60000);
+        const durationHr = (stage.durationMs / 3600000).toFixed(2);
         li.innerHTML = `
-      <strong>${escapeHtml(stage.stageName)}</strong> - ${durationMin} min
+      <strong>${escapeHtml(stage.stageName)}</strong> - ${durationHr} hr
       ${idx === mix.currentStageIndex ? '<span style="margin-left: 10px; color: #d39e00; font-weight: bold;">← Current</span>' : ''}
     `;
         stagesList.appendChild(li);
@@ -535,13 +537,13 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
     const actionsDiv = document.createElement("div");
     actionsDiv.style.cssText = "display: flex; gap: 10px; margin-top: 20px;";
 
-    if (mix.currentStageIndex < mix.powders.length - 1) {
+    if (mix.currentStageIndex < mix.components.length - 1) {
         const nextBtn = document.createElement("button");
         nextBtn.className = "btn primary";
         nextBtn.textContent = "Next Stage";
         nextBtn.addEventListener("click", async () => {
             try {
-                await advanceStage(mixId, mix.currentStageIndex);
+                await advanceStage(mixId, mix.currentStageIndex, mix.components.length);
             } catch (e) {
                 console.error(e);
                 errorMsg.textContent = "Error advancing stage: " + e.message;
@@ -672,7 +674,7 @@ export function initIndexPage() {
 
         mixes.forEach((mix) => {
             if (mix.isDeleted) return;
-            const stage = mix.powders[mix.currentStageIndex];
+            const stage = mix.components[mix.currentStageIndex];
             if (!stage) return;
 
             const end = mix.currentStageStartedAtMs + stage.durationMs;
@@ -691,7 +693,7 @@ export function initIndexPage() {
                 description: mix.description,
                 stageName: stage.stageName,
                 currentStageIndex: mix.currentStageIndex,
-                totalStages: mix.powders.length,
+                totalStages: mix.components.length,
                 remaining,
                 isDone: remaining === 0,
                 createdByUid: mix.createdByUid,

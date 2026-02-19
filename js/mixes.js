@@ -46,7 +46,8 @@ export function subscribeMix(mixId, onUpdate, onError) {
 }
 
 // ===== ADVANCE STAGE FROM MIX DETAIL PAGE =====
-export async function advanceStage(mixId, currentStageIndex) {
+export async function advanceStage(mixId, currentStageIndex, totalStages) {
+    if (currentStageIndex >= totalStages - 1) return;
     return db.collection("mixes").doc(mixId).update({
         currentStageIndex: currentStageIndex + 1,
         currentStageStartedAtMs: Date.now()

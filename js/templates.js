@@ -15,7 +15,7 @@ export async function saveAsTemplate(mixId, templateName) {
             category: mixData.category || null,
             color: mixData.color || "#666666",
             description: mixData.description || null,
-            powders: mixData.powders,
+            components: mixData.components,
             createdAtMs: Date.now()
         });
 
