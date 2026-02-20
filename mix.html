@@ -12,22 +12,29 @@
 </head>
 
 <body>
-  <div class="container">
-    <header class="topbar">
+  <div class="container small">
+    <header class="topbar fade-in">
       <div>
-        <h1>Mix Details</h1>
-        <p class="subtitle">View and manage this mix</p>
+        <h1 class="brand">Mix Details</h1>
+        <p class="subtitle">Component tracking and actions</p>
       </div>
-      <div class="topbar-right">
-        <div id="userBadge" class="badge muted">Not logged in</div>
-        <a class="btn" href="index.html">← Back to Dashboard</a>
-      </div>
+      <div id="userBadge" class="badge"></div>
     </header>
 
-    <section class="card">
-      <div id="mixContent"></div>
-      <div id="errorMsg" class="msg" style="color: #d9534f;"></div>
-    </section>
+    <div id="errorMsg" class="msg"
+      style="color: var(--danger); border: 1px solid var(--danger); background: rgba(239, 68, 68, 0.05); display: none;">
+    </div>
+
+    <div id="mixContent" class="fade-in" style="animation-delay: 0.1s;">
+      <!-- Mix data rendered here by ui.js -->
+      <div class="card" style="padding: 40px; text-align: center; color: var(--text-dim);">
+        Loading mix data...
+      </div>
+    </div>
+
+    <div class="rowEnd fade-in" style="animation-delay: 0.2s; margin-top: 32px;">
+      <a class="btn" href="index.html">← Back to Dashboard</a>
+    </div>
   </div>
 
   <script type="module" src="main.js"></script>

@@ -13,17 +13,23 @@
 
 <body>
   <div class="container small">
-    <header>
-      <h1>Account Settings</h1>
-      <p class="subtitle">Manage your account</p>
+    <header class="fade-in">
+      <h1 class="brand">Account Settings</h1>
+      <p class="subtitle">Manage your profile and preferences</p>
     </header>
-    <section class="card" id="accountPanel">
-      <!-- Account info and actions will be rendered here by app.js -->
+
+    <section class="card fade-in" id="accountPanel" style="animation-delay: 0.1s;">
+      <!-- Account info and actions will be rendered here by ui.js -->
+      <div style="padding: 24px; text-align: center; color: var(--text-dim);">
+        Loading account data...
+      </div>
     </section>
-    <div class="rowEnd">
-      <a class="btn" href="index.html">← Back</a>
+
+    <div class="rowEnd fade-in" style="animation-delay: 0.2s; margin-top: 32px;">
+      <a class="btn" href="index.html">← Back to Dashboard</a>
     </div>
-    <div id="authDebug" class="msg"></div>
+
+    <div id="authDebug" class="msg" style="text-align: center; font-size: 0.8rem; color: var(--text-dim);"></div>
   </div>
   <script type="module" src="main.js"></script>
 </body>

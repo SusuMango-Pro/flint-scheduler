@@ -10,7 +10,7 @@ import {
 
 // ===== CATEGORY COLOR UTILS =====
 const CATEGORY_COLORS = [
-    '#2f81f7', '#ff5c5c', '#3fb950', '#f2cc60', '#a259f7', '#ffb347', '#00b8d9', '#ff69b4', '#6e40c9', '#ff8c00', '#20b2aa', '#e9967a', '#4682b4', '#bada55', '#b22222', '#008080', '#b8860b', '#556b2f', '#8b008b', '#483d8b'
+    '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#06b6d4', '#ec4899', '#f97316', '#84cc16', '#22d3ee'
 ];
 
 export function getCategoryColor(category) {
@@ -272,23 +272,23 @@ export function initAddMixPage() {
 
 function addComponentStageRow(container, stageNum, canRemove) {
     const row = document.createElement("div");
-    row.className = "stage-row";
-    row.style.cssText = "display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end;";
+    row.className = "stage-row fade-in";
+    row.style.cssText = "display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-end;";
 
     const nameField = document.createElement("div");
     nameField.className = "field";
-    nameField.style.flex = "1";
+    nameField.style.flex = "2";
     nameField.innerHTML = `
-    <label>Component ${stageNum} - Name</label>
-    <input class="stage-name" placeholder="e.g. Component ${stageNum}" value="Component ${stageNum}" />
+    <label>Component ${stageNum}</label>
+    <input class="stage-name" placeholder="Name" value="Component ${stageNum}" />
   `;
 
     const minutesField = document.createElement("div");
     minutesField.className = "field";
     minutesField.style.flex = "1";
     minutesField.innerHTML = `
-    <label>Component ${stageNum} - Duration (minutes)</label>
-    <input class="stage-minutes" type="number" min="1" step="1" placeholder="e.g. 30" />
+    <label>Duration (min)</label>
+    <input class="stage-minutes" type="number" min="1" step="1" placeholder="30" />
   `;
 
     row.appendChild(nameField);
@@ -297,9 +297,9 @@ function addComponentStageRow(container, stageNum, canRemove) {
     if (canRemove) {
         const removeBtn = document.createElement("button");
         removeBtn.type = "button";
-        removeBtn.className = "btn";
+        removeBtn.className = "btn danger small";
         removeBtn.textContent = "Remove";
-        removeBtn.style.cssText = "height: fit-content; margin-bottom: 0;";
+        removeBtn.style.marginBottom = "0";
         removeBtn.addEventListener("click", () => row.remove());
         row.appendChild(removeBtn);
     }
@@ -309,23 +309,23 @@ function addComponentStageRow(container, stageNum, canRemove) {
 
 function addTemplateComponentRow(container, stageNum, canRemove) {
     const row = document.createElement("div");
-    row.className = "template-stage-row";
-    row.style.cssText = "display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end;";
+    row.className = "template-stage-row fade-in";
+    row.style.cssText = "display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-end;";
 
     const nameField = document.createElement("div");
     nameField.className = "field";
-    nameField.style.flex = "1";
+    nameField.style.flex = "2";
     nameField.innerHTML = `
-    <label>Component ${stageNum} - Name</label>
-    <input class="template-stage-name" placeholder="e.g. Component ${stageNum}" value="Component ${stageNum}" />
+    <label>Component ${stageNum}</label>
+    <input class="template-stage-name" placeholder="Name" value="Component ${stageNum}" />
   `;
 
     const minutesField = document.createElement("div");
     minutesField.className = "field";
     minutesField.style.flex = "1";
     minutesField.innerHTML = `
-    <label>Component ${stageNum} - Duration (minutes)</label>
-    <input class="template-stage-minutes" type="number" min="1" step="1" placeholder="e.g. 30" />
+    <label>Duration (min)</label>
+    <input class="template-stage-minutes" type="number" min="1" step="1" placeholder="30" />
   `;
 
     row.appendChild(nameField);
@@ -334,9 +334,9 @@ function addTemplateComponentRow(container, stageNum, canRemove) {
     if (canRemove) {
         const removeBtn = document.createElement("button");
         removeBtn.type = "button";
-        removeBtn.className = "btn";
+        removeBtn.className = "btn danger small";
         removeBtn.textContent = "Remove";
-        removeBtn.style.cssText = "height: fit-content; margin-bottom: 0;";
+        removeBtn.style.marginBottom = "0";
         removeBtn.addEventListener("click", () => row.remove());
         row.appendChild(removeBtn);
     }
@@ -360,14 +360,15 @@ function loadAndRenderTemplates(userId, container) {
             const template = doc.data();
             const stages = template.components || template.powders || [];
             const item = document.createElement("div");
-            item.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f5f5f5; border-radius: 4px; border-left: 4px solid " + (template.color || "#666666") + ";";
+            item.className = "fade-in";
+            item.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--surface-elevated); border-radius: 12px; border-left: 4px solid " + (template.color || "var(--primary)") + "; margin-bottom: 12px;";
 
             const info = document.createElement("div");
             info.style.flex = "1";
             info.innerHTML = `
-        <strong style='color:#111;'>${template.templateName}</strong>
-        ${template.category ? `<br><small style="color: #000;">${template.category}</small>` : ""}
-        <br><small style="color: #000;">${stages.length} components</small>
+        <strong style='color: var(--text); font-size: 1.1rem;'>${template.templateName}</strong>
+        ${template.category ? `<br><span style="color: var(--primary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">${template.category}</span>` : ""}
+        <br><span style="color: var(--text-dim); font-size: 0.85rem;">${stages.length} components</span>
       `;
 
             const btns = document.createElement("div");
@@ -483,62 +484,78 @@ function renderMixDetail(mix, user, mixContent, errorMsg, mixId) {
 
     // Header
     const header = document.createElement("div");
-    header.style.cssText = "margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid " + (mix.color || "#666666");
+    header.style.cssText = "margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border);";
     let titleHtml = escapeHtml(mix.mixName);
-    if (mix.batchNumber) titleHtml = escapeHtml(mix.batchNumber) + " - " + titleHtml;
+    if (mix.batchNumber) titleHtml = `<span style="color: var(--text-muted); font-weight: 400;">${escapeHtml(mix.batchNumber)}</span> <span style="color: var(--border); margin: 0 8px;">/</span> ` + titleHtml;
     header.innerHTML = `
-    <h1 style="margin: 0 0 5px 0; color: ${mix.color || '#333'};">${titleHtml}</h1>
-    ${mix.category ? `<p style="margin: 5px 0; color: #000;"><strong>Category:</strong> ${escapeHtml(mix.category)}</p>` : ""}
-    <p style="margin: 5px 0; color: #000;"><strong>Created by:</strong> ${escapeHtml(mix.createdByName || mix.createdByEmail || "Unknown")}</p>
+    <h1 style="margin: 0 0 12px 0; font-size: 2rem; color: ${mix.color || 'var(--text)'};">${titleHtml}</h1>
+    <div style="display: flex; gap: 16px; align-items: center;">
+      ${mix.category ? `<span class="badge" style="border-color: ${mix.color || 'var(--primary)'}; color: ${mix.color || 'var(--primary)'};">${escapeHtml(mix.category)}</span>` : ""}
+      <span style="font-size: 0.9rem; color: var(--text-muted);">Created by ${escapeHtml(mix.createdByName || mix.createdByEmail || "Unknown")}</span>
+    </div>
   `;
     mixContent.appendChild(header);
 
     // Description
     if (mix.description) {
         const descDiv = document.createElement("div");
-        descDiv.style.cssText = "margin-bottom: 20px; padding: 12px; background: #f5f5f5; border-radius: 4px;";
-        descDiv.innerHTML = `<p style="margin: 0; color: #000;"><strong>Description:</strong> ${escapeHtml(mix.description)}</p>`;
+        descDiv.style.cssText = "margin-bottom: 32px; padding: 16px; background: var(--surface-elevated); border-radius: 12px; border: 1px solid var(--border);";
+        descDiv.innerHTML = `<p style="margin: 0; color: var(--text-muted); font-style: italic;">"${escapeHtml(mix.description)}"</p>`;
         mixContent.appendChild(descDiv);
     }
 
     // Current stage
     if (currentStage) {
         const stageDiv = document.createElement("div");
-        stageDiv.style.cssText = "margin-bottom: 20px; padding: 15px; background: #e8f4f8; border-radius: 4px; border-left: 4px solid #17a2b8;";
+        stageDiv.style.cssText = "margin-bottom: 32px; padding: 24px; background: rgba(16, 185, 129, 0.05); border-radius: 16px; border: 1px solid var(--primary); box-shadow: 0 0 30px rgba(16, 185, 129, 0.05);";
         stageDiv.innerHTML = `
-      <h2 style="margin: 0 0 10px 0;">Current Component</h2>
-      <p style="margin: 5px 0; font-size: 1.1em; color: #000;"><strong>${escapeHtml(currentStage.stageName)}</strong> (${mix.currentStageIndex + 1} of ${stages.length})</p>
-      <p style="margin: 5px 0; font-size: 1.2em;"><strong>Time remaining:</strong> <span
-        data-end-ms="${stageEnd}"
-        data-mix-id="${mix.id}"
-        data-stage-index="${mix.currentStageIndex}"
-        data-mix-name="${escapeHtml(mix.mixName)}"
-        data-stage-name="${escapeHtml(currentStage.stageName)}"
-      >${formatTime(remaining)}</span></p>
-      <p style="margin: 5px 0; color: #000;">${remaining === 0 ? "Component complete!" : "In progress"}</p>
+      <h2 style="margin: 0 0 16px 0; font-size: 0.9rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em;">Current Component</h2>
+      <p style="margin: 0 0 20px 0; font-size: 1.5rem; color: var(--text);"><strong>${escapeHtml(currentStage.stageName)}</strong> <span style="color: var(--text-dim); font-size: 1rem; margin-left: 8px;">(${mix.currentStageIndex + 1} of ${stages.length})</span></p>
+      
+      <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px;">
+        <span style="font-size: 0.9rem; color: var(--text-muted);">Remaining</span>
+        <span style="font-size: 2.5rem; font-weight: 700; font-family: 'Outfit', sans-serif; letter-spacing: -0.05em;"
+          data-end-ms="${stageEnd}"
+          data-mix-id="${mix.id}"
+          data-stage-index="${mix.currentStageIndex}"
+          data-mix-name="${escapeHtml(mix.mixName)}"
+          data-stage-name="${escapeHtml(currentStage.stageName)}"
+        >${formatTime(remaining)}</span>
+      </div>
+      
+      <p class="status ${remaining === 0 ? 'done' : 'running'}" style="margin: 0;">${remaining === 0 ? "✓ Component complete" : "○ In progress"}</p>
     `;
         mixContent.appendChild(stageDiv);
     }
 
     // All stages list
     const stagesDiv = document.createElement("div");
-    stagesDiv.style.cssText = "margin-bottom: 20px;";
-    stagesDiv.innerHTML = "<h3>All Components</h3>";
+    stagesDiv.style.cssText = "margin-bottom: 32px;";
+    stagesDiv.innerHTML = "<h3 style='margin-bottom: 16px; font-size: 1.1rem; color: var(--text-muted);'>Timeline</h3>";
 
-    const stagesList = document.createElement("ul");
-    stagesList.style.cssText = "list-style: none; padding: 0; margin: 0;";
+    const stagesList = document.createElement("div");
+    stagesList.style.cssText = "display: flex; flex-direction: column; gap: 8px;";
 
     stages.forEach((stage, idx) => {
-        const li = document.createElement("li");
-        li.style.cssText = `
-      padding: 10px; margin-bottom: 8px; background: ${idx === mix.currentStageIndex ? '#fff3cd' : '#f9f9f9'};
-      border-left: 3px solid ${idx === mix.currentStageIndex ? '#ffc107' : '#ddd'}; border-radius: 2px;
+        const item = document.createElement("div");
+        const isCurrent = idx === mix.currentStageIndex;
+        item.style.cssText = `
+      display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; 
+      background: ${isCurrent ? 'rgba(16, 185, 129, 0.05)' : 'var(--surface)'};
+      border: 1px solid ${isCurrent ? 'var(--primary)' : 'var(--border)'};
+      border-radius: 12px; transition: all 0.2s ease;
     `;
-        li.innerHTML = `
-      <strong>${escapeHtml(stage.stageName)}</strong> - ${formatTime(stage.durationMs)}
-      ${idx === mix.currentStageIndex ? '<span style="margin-left: 10px; color: #d39e00; font-weight: bold;">← Current</span>' : ''}
+        item.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 0.8rem; color: ${isCurrent ? 'var(--primary)' : 'var(--text-dim)'}; font-weight: 700; width: 20px;">${idx + 1}</span>
+        <strong style="color: ${isCurrent ? 'var(--text)' : 'var(--text-muted)'};">${escapeHtml(stage.stageName)}</strong>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 0.9rem; color: var(--text-dim);">${formatTime(stage.durationMs)}</span>
+        ${isCurrent ? '<span class="status running" style="font-size: 0.7rem;">Active</span>' : (idx < mix.currentStageIndex ? '<span style="color: var(--ok);">✓</span>' : '')}
+      </div>
     `;
-        stagesList.appendChild(li);
+        stagesList.appendChild(item);
     });
 
     stagesDiv.appendChild(stagesList);
@@ -720,66 +737,61 @@ export function initIndexPage() {
         Object.keys(groupedByColor).sort().forEach(categoryKey => {
             const { color, items } = groupedByColor[categoryKey];
             const groupDiv = document.createElement("div");
-            groupDiv.style.cssText = "border-left: 5px solid " + color + "; padding: 15px; background: #fafafa; border-radius: 4px;";
+            groupDiv.className = "fade-in";
+            groupDiv.style.cssText = "border-left: 4px solid " + color + "; padding: 0 0 0 20px; margin-bottom: 40px;";
 
             const heading = document.createElement("h3");
-            heading.style.cssText = "margin-top: 0; margin-bottom: 15px; color: " + color + ";";
+            heading.style.cssText = "margin-top: 0; margin-bottom: 20px; color: " + color + "; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em;";
             heading.textContent = categoryKey;
             groupDiv.appendChild(heading);
 
             const mixesContainer = document.createElement("div");
-            mixesContainer.style.cssText = "display: flex; flex-direction: column; gap: 10px;";
+            mixesContainer.style.cssText = "display: flex; flex-direction: column; gap: 12px;";
 
             items.forEach(mix => {
-
                 const mixItem = document.createElement("div");
-                mixItem.setAttribute('data-mix-card', ''); // needed for card flash (Feature 3)
-                mixItem.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; transition: background-color 0.2s;";
-                mixItem.onmouseover = () => mixItem.style.backgroundColor = "#f9f9f9";
-                mixItem.onmouseout = () => mixItem.style.backgroundColor = "white";
+                mixItem.setAttribute('data-mix-card', '');
+                mixItem.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: var(--surface); border-radius: 12px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease;";
+                mixItem.onmouseover = () => { mixItem.style.borderColor = "var(--border-focus)"; mixItem.style.background = "var(--surface-elevated)"; };
+                mixItem.onmouseout = () => { mixItem.style.borderColor = "var(--border)"; mixItem.style.background = "var(--surface)"; };
 
                 const infoDiv = document.createElement("div");
                 infoDiv.style.flex = "1";
-                infoDiv.style.cursor = "pointer";
                 infoDiv.onclick = () => window.location.href = "mix.html?id=" + mix.id;
 
                 const title = document.createElement("strong");
                 let titleText = escapeHtml(mix.mixName);
-                if (mix.batchNumber) titleText = escapeHtml(mix.batchNumber) + " - " + titleText;
-                title.textContent = titleText;
-                title.style.color = '#111';
+                if (mix.batchNumber) titleText = `<span style="color: var(--text-dim); font-weight: 400;">${escapeHtml(mix.batchNumber)}</span> <span style="color: var(--border); margin: 0 4px;">/</span> ` + titleText;
+                title.innerHTML = titleText;
+                title.style.color = 'var(--text)';
+                title.style.fontSize = '1.1rem';
                 infoDiv.appendChild(title);
 
-                if (mix.category) {
-                    const catSpan = document.createElement("span");
-                    catSpan.style.cssText = "display: block; font-size: 0.85em; color: #000; margin-top: 4px;";
-                    catSpan.textContent = "Category: " + escapeHtml(mix.category);
-                    infoDiv.appendChild(catSpan);
-                }
-
                 const details = document.createElement("span");
-                details.style.cssText = "display: block; font-size: 0.9em; color: #000; margin-top: 4px;";
+                details.style.cssText = "display: block; font-size: 0.85rem; color: var(--text-muted); margin-top: 6px;";
                 details.innerHTML = `
-          <strong>Component:</strong> ${escapeHtml(mix.stageName)} (${mix.currentStageIndex + 1}/${mix.totalStages}) | 
-          <strong>Creator:</strong> ${escapeHtml(mix.createdByName)} | 
-          <strong>Time left:</strong> <span
+          <span style="color: var(--primary); font-weight: 600;">${escapeHtml(mix.stageName)}</span> 
+          <span style="color: var(--text-dim); margin: 0 8px;">•</span>
+          <span>${mix.currentStageIndex + 1}/${mix.totalStages} stages</span>
+          <span style="color: var(--text-dim); margin: 0 8px;">•</span>
+          <span>${escapeHtml(mix.createdByName)}</span>
+          <span style="color: var(--text-dim); margin: 0 8px;">•</span>
+          <span
             data-end-ms="${Date.now() + mix.remaining}"
             data-mix-id="${mix.id}"
             data-stage-index="${mix.currentStageIndex}"
             data-mix-name="${escapeHtml(mix.mixName)}"
             data-stage-name="${escapeHtml(mix.stageName)}"
-          >${formatTime(mix.remaining)}</span> | 
-          <strong>Status:</strong> ${mix.isDone ? "Done" : "Running"}
+          >${formatTime(mix.remaining)}</span> left
         `;
                 infoDiv.appendChild(details);
 
                 const actionsDiv = document.createElement("div");
-                actionsDiv.style.cssText = "display: flex; gap: 8px; margin-left: 15px;";
+                actionsDiv.style.cssText = "display: flex; gap: 8px; margin-left: 16px;";
 
                 const nextBtn = document.createElement("button");
-                nextBtn.className = "btn";
-                nextBtn.textContent = "Next";
-                nextBtn.style.fontSize = "0.9em";
+                nextBtn.className = "btn small";
+                nextBtn.textContent = "Next Stage";
                 nextBtn.onclick = async (e) => {
                     e.stopPropagation();
                     try {
@@ -792,18 +804,18 @@ export function initIndexPage() {
                 actionsDiv.appendChild(nextBtn);
 
                 const deleteBtn = document.createElement("button");
-                deleteBtn.className = "btn danger";
-                deleteBtn.textContent = "Delete";
-                deleteBtn.style.fontSize = "0.9em";
+                deleteBtn.className = "btn danger small";
+                deleteBtn.innerHTML = "×";
+                deleteBtn.title = "Delete Mix";
                 deleteBtn.onclick = (e) => {
                     e.stopPropagation();
                     if (currentUser && currentUser.uid === mix.createdByUid) {
                         if (confirm("Delete this mix?")) {
                             try { softDeleteMix(mix.id); }
-                            catch (err) { console.error(err); alert("Error deleting mix: " + err.message); }
+                            catch (err) { console.error(err); alert(err.message); }
                         }
                     } else {
-                        alert("You can only delete your own mixes");
+                        alert("You can only delete mixes you created.");
                     }
                 };
                 actionsDiv.appendChild(deleteBtn);
@@ -812,9 +824,24 @@ export function initIndexPage() {
                 mixItem.appendChild(actionsDiv);
                 mixesContainer.appendChild(mixItem);
             });
-
             groupDiv.appendChild(mixesContainer);
             mixRows.appendChild(groupDiv);
+        });
+                            catch (err) { console.error(err); alert("Error deleting mix: " + err.message); }
+    }
+} else {
+    alert("You can only delete your own mixes");
+}
+                };
+actionsDiv.appendChild(deleteBtn);
+
+mixItem.appendChild(infoDiv);
+mixItem.appendChild(actionsDiv);
+mixesContainer.appendChild(mixItem);
+            });
+
+groupDiv.appendChild(mixesContainer);
+mixRows.appendChild(groupDiv);
         });
     }
 }

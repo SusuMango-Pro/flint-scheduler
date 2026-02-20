@@ -31,35 +31,37 @@
         </div>
         <div class="field">
           <label>Password</label>
-          <input id="su_password" type="password" placeholder="prototype only" />
-        </div>
-      </div>
-      <button class="btn primary" id="signupBtn">Create account</button>
-    </section>
+          <div class="container small">
+            <header class="fade-in" style="text-align: center; margin-bottom: 60px;">
+              <h1 class="brand" style="font-size: 2.5rem;">Flint Scheduler</h1>
+              <p class="subtitle">Secure access to mix tracking</p>
+            </header>
 
-    <section class="card">
-      <h2>Log in</h2>
-      <div class="formRow">
-        <div class="field">
-          <label>email</label>
-          <input id="li_email" type="email" placeholder="name@company.com" />
-        </div>
-        <div class="field">
-          <label>Password</label>
-          <input id="li_password" type="password" />
-        </div>
-      </div>
-      <button class="btn primary" id="loginBtn">Log in</button>
-      <span id="login-status" style="margin-left:10px;color:#888;"></span>
-      <div class="rowEnd">
-        <a class="btn" href="index.html">← Back</a>
-      </div>
-    </section>
+            <section class="card fade-in" style="max-width: 400px; margin: 0 auto; animation-delay: 0.1s;">
+              <div class="cardHead" style="justify-content: center; margin-bottom: 32px;">
+                <h2>Account Login</h2>
+              </div>
 
-    <div id="msg" class="msg"></div>
-  </div>
+              <div class="field" style="margin-bottom: 20px;">
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="name@company.com" />
+              </div>
+              <div class="field" style="margin-bottom: 32px;">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="••••••••" />
+              </div>
 
-  <script type="module" src="main.js"></script>
+              <button class="btn primary" id="loginBtn" style="width: 100%; padding: 14px;">Sign In</button>
+
+              <div id="msg" class="msg" style="text-align: center; margin-top: 24px;"></div>
+            </section>
+
+            <div class="rowEnd fade-in" style="justify-content: center; margin-top: 40px; animation-delay: 0.2s;">
+              <a class="btn small" href="index.html">← Back to Dashboard</a>
+            </div>
+          </div>
+
+          <script type="module" src="main.js"></script>
 </body>
 
 </html>

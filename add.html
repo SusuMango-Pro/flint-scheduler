@@ -13,19 +13,22 @@
 
 <body>
   <div class="container small">
-    <header>
-      <h1>Add a new mix</h1>
+    <header class="fade-in">
+      <h1 class="brand">Add a new mix</h1>
       <p class="subtitle">Create a mix with custom component steps, category, and color.</p>
     </header>
 
     <!-- TEMPLATES / QUICK ADD SECTION -->
-    <section class="card" id="templatesSection" style="display:none;">
+    <section class="card fade-in" id="templatesSection"
+      style="display:none; border-color: var(--primary); background: rgba(16, 185, 129, 0.02);">
       <div class="cardHead">
-        <h2>Quick Add from Template</h2>
+        <h2 class="text-primary">Quick Add from Template</h2>
       </div>
       <div id="templatesList"></div>
-      <hr style="margin: 20px 0;">
+      <hr style="margin: 32px 0; border: none; border-top: 1px solid var(--border);">
       <h3>Create New Template</h3>
+      <p class="text-dim" style="font-size: 0.9rem; margin-bottom: 20px;">Save a set of components for future use.</p>
+
       <div class="formRow">
         <div class="field">
           <label>Template Name *</label>
@@ -35,23 +38,21 @@
           <label>Category</label>
           <input id="templateCategory" placeholder="e.g. Explosive, Fertilizer" list="categoryOptions" />
         </div>
-        <div class="field">
-          <label>Description (optional)</label>
-          <input id="templateDescription" placeholder="Notes about this template" />
-        </div>
       </div>
-      <div class="formRow">
-        <!-- Color picker removed: color is now assigned by category automatically. -->
+      <div class="field" style="margin-bottom: 20px;">
+        <label>Description (optional)</label>
+        <input id="templateDescription" placeholder="Notes about this template" />
       </div>
-      <div id="templateComponentsList" style="margin: 15px 0;"></div>
+
+      <div id="templateComponentsList" style="margin: 24px 0;"></div>
       <button class="btn" id="addTemplateComponentBtn">+ Add component</button>
-      <div style="margin-top: 15px;">
+      <div style="margin-top: 24px; display: flex; align-items: center; gap: 16px;">
         <button class="btn primary" id="saveTemplateBtn">Save Template</button>
+        <div id="templateMsg" class="msg" style="margin: 0;"></div>
       </div>
-      <div id="templateMsg" class="msg"></div>
     </section>
 
-    <section class="card">
+    <section class="card fade-in" style="animation-delay: 0.1s;">
       <div class="formRow">
         <div class="field">
           <label>Batch Number (optional)</label>
@@ -78,27 +79,26 @@
         </div>
       </div>
 
-      <div class="formRow">
-        <div class="field">
-          <label>Description (optional)</label>
-          <textarea id="mixDescription" placeholder="Optional notes about this mix"
-            style="resize: vertical; min-height: 60px;"></textarea>
-        </div>
-        <!-- Color picker removed: color is now assigned by category automatically. -->
+      <div class="field" style="margin-bottom: 24px;">
+        <label>Description (optional)</label>
+        <textarea id="mixDescription" placeholder="Optional notes about this mix"
+          style="resize: vertical; min-height: 80px;"></textarea>
       </div>
 
-      <h3 style="margin-top: 20px; margin-bottom: 10px;">Mixing Components</h3>
+      <h3 style="margin-top: 32px; margin-bottom: 16px;">Mixing Components</h3>
 
       <div id="componentStagesList"></div>
 
-      <button class="btn" id="addComponentStageBtn" style="margin-top: 10px;">+ Add component</button>
+      <button class="btn" id="addComponentStageBtn" style="margin-top: 12px;">+ Add component</button>
 
-      <button class="btn primary" id="createMixBtn" style="margin-top: 20px;">Create mix</button>
-      <div class="rowEnd">
+      <div
+        style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 24px; display: flex; align-items: center; justify-content: space-between;">
         <a class="btn" href="index.html">← Back</a>
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div id="msg" class="msg" style="margin: 0;"></div>
+          <button class="btn primary" id="createMixBtn">Create mix</button>
+        </div>
       </div>
-
-      <div id="msg" class="msg"></div>
     </section>
   </div>
 

@@ -1,48 +1,52 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mix Scheduler</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="style.css" />
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
-  <body>
-    <div class="container">
-      <header class="topbar">
-        <div>
-          <h1>Mix Scheduler</h1>
-          <p class="subtitle">Active mixes dashboard</p>
-        </div>
-        <div class="topbar-right">
-          <div id="userBadge" class="badge muted">Not logged in</div>
-          <a class="btn" href="login.html" id="loginLink">Log in</a>
-          <button class="btn danger" id="logoutBtn" style="display:none;">Log out</button>
-          <a class="btn primary" href="add.html" id="addMixBtn">+ Add mix</a>
-        </div>
-      </header>
 
-      <section class="card">
-        <div class="cardHead">
-          <h2>Active mixes</h2>
-        </div>
+<body>
+  <div class="container">
+    <header class="topbar">
+      <div>
+        <h1 class="brand">Flint Scheduler</h1>
+        <p class="subtitle">Active mixes dashboard</p>
+      </div>
+      <div class="topbar-right">
+        <div id="userBadge" class="badge">Not logged in</div>
+        <a class="btn" href="login.html" id="loginLink">Log in</a>
+        <button class="btn danger" id="logoutBtn" style="display:none;">Log out</button>
+        <a class="btn primary" href="add.html" id="addMixBtn">+ Add mix</a>
+      </div>
+    </header>
 
-        <div style="display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid #ddd;">
-          <button class="tabBtn" id="teamTabBtn" style="padding: 10px 15px; background: none; border: none; border-bottom: 3px solid #007bff; cursor: pointer; font-weight: bold; color: #007bff;">Team</button>
-          <button class="tabBtn" id="myTabBtn" style="padding: 10px 15px; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: bold; color: #666; transition: all 0.3s;">My Mixes</button>
-        </div>
+    <section class="card fade-in">
+      <div class="cardHead">
+        <h2>Active mixes</h2>
+      </div>
 
-        <div id="mixes-state" style="margin-bottom:10px;color:#888;"></div>
-        <div id="mixRows" style="display: flex; flex-direction: column; gap: 20px;"></div>
+      <div style="display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 1px solid var(--border);">
+        <button class="tabBtn active" id="teamTabBtn">Team</button>
+        <button class="tabBtn" id="myTabBtn">My Mixes</button>
+      </div>
 
-        <p class="note">
-          Multi-step mixing system. Mixes are stored in Firebase Cloud Firestore in real-time.
-        </p>
-      </section>
-    </div>
+      <div id="mixes-state" style="margin-bottom:16px; color: var(--text-dim);"></div>
+      <div id="mixRows" style="display: flex; flex-direction: column; gap: 16px;"></div>
 
-    <script type="module" src="main.js"></script>
-  </body>
+      <p class="note"
+        style="margin-top: 24px; color: var(--text-dim); border-top: 1px solid var(--border); padding-top: 16px;">
+        Multi-step mixing system. Powered by Flint Labs.
+      </p>
+    </section>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+
 </html>
