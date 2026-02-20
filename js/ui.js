@@ -10,7 +10,7 @@ import {
 
 // ===== CATEGORY COLOR UTILS =====
 const CATEGORY_COLORS = [
-    '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#06b6d4', '#ec4899', '#f97316', '#84cc16', '#22d3ee'
+    '#10b981', '#059669', '#34d399', '#064e3b', '#6ee7b7', '#14b8a6', '#0f766e', '#5eead4', '#84cc16', '#a3e635'
 ];
 
 export function getCategoryColor(category) {
