@@ -320,10 +320,10 @@ function addTemplateComponentRow(container, stageNum, canRemove) {
     <input class="template-stage-name" placeholder="e.g. Component ${stageNum}" value="Component ${stageNum}" />
   `;
 
-    const hoursField = document.createElement("div");
-    hoursField.className = "field";
-    hoursField.style.flex = "1";
-    hoursField.innerHTML = `
+    const minutesField = document.createElement("div");
+    minutesField.className = "field";
+    minutesField.style.flex = "1";
+    minutesField.innerHTML = `
     <label>Component ${stageNum} - Duration (minutes)</label>
     <input class="template-stage-minutes" type="number" min="1" step="1" placeholder="e.g. 30" />
   `;
