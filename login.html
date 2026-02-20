@@ -4,8 +4,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login · Flint Scheduler</title>
+  <title>Access · Flint Scheduler</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .auth-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+      padding: 4px;
+      background: var(--surface-elevated);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .auth-toggle button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: none;
+      color: var(--text-dim);
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .auth-toggle button.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    #signupForm {
+      display: none;
+    }
+  </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -13,37 +46,88 @@
 
 <body>
   <div class="container small">
-    <header class="fade-in" style="text-align: center; margin-bottom: 60px;">
+    <header class="fade-in" style="text-align: center; margin-bottom: 48px;">
       <img src="https://www.flintlabs.com/flint-logo-white.svg" alt="Flint"
-        style="height: 64px; width: auto; margin-bottom: 24px;" />
-      <h1 class="brand" style="font-size: 2.5rem;">Scheduler</h1>
-      <p class="subtitle">Secure access to mix tracking</p>
+        style="height: 48px; width: auto; margin-bottom: 16px;" />
+      <h1 class="brand">Scheduler</h1>
+      <p class="subtitle">Secure access to your mixing console</p>
     </header>
 
+    <div class="auth-toggle fade-in" style="max-width: 400px; margin: 0 auto 32px auto;">
+      <button id="showLogin" class="active">Sign In</button>
+      <button id="showSignup">Sign Up</button>
+    </div>
+
     <section class="card fade-in" style="max-width: 400px; margin: 0 auto; animation-delay: 0.1s;">
-      <div class="cardHead" style="justify-content: center; margin-bottom: 32px;">
-        <h2>Account Login</h2>
+      <!-- Login Form -->
+      <div id="loginForm">
+        <div class="cardHead" style="justify-content: center; margin-bottom: 24px;">
+          <h2>Welcome Back</h2>
+        </div>
+        <div class="field" style="margin-bottom: 16px;">
+          <label>Email Address</label>
+          <input type="email" id="li_email" placeholder="name@company.com" />
+        </div>
+        <div class="field" style="margin-bottom: 24px;">
+          <label>Password</label>
+          <input type="password" id="li_password" placeholder="••••••••" />
+        </div>
+        <button class="btn primary" id="loginBtn" style="width: 100%; padding: 14px;">Sign In</button>
+        <div id="login-status"
+          style="text-align: center; margin-top: 16px; font-size: 0.85rem; color: var(--text-dim);"></div>
       </div>
 
-      <div class="field" style="margin-bottom: 20px;">
-        <label>Email Address</label>
-        <input type="email" id="email" placeholder="name@company.com" />
-      </div>
-      <div class="field" style="margin-bottom: 32px;">
-        <label>Password</label>
-        <input type="password" id="password" placeholder="••••••••" />
+      <!-- Signup Form -->
+      <div id="signupForm">
+        <div class="cardHead" style="justify-content: center; margin-bottom: 24px;">
+          <h2>Create Account</h2>
+        </div>
+        <div class="field" style="margin-bottom: 16px;">
+          <label>Full Name</label>
+          <input type="text" id="su_username" placeholder="Alex Rivera" />
+        </div>
+        <div class="field" style="margin-bottom: 16px;">
+          <label>Email Address</label>
+          <input type="email" id="su_email" placeholder="alex@flint.com" />
+        </div>
+        <div class="field" style="margin-bottom: 24px;">
+          <label>Password</label>
+          <input type="password" id="su_password" placeholder="••••••••" />
+        </div>
+        <button class="btn primary" id="signupBtn" style="width: 100%; padding: 14px;">Create Account</button>
       </div>
 
-      <button class="btn primary" id="loginBtn" style="width: 100%; padding: 14px;">Sign In</button>
-
-      <div id="msg" class="msg" style="text-align: center; margin-top: 24px;"></div>
+      <div id="msg" class="msg" style="text-align: center; margin-top: 16px;"></div>
     </section>
 
-    <div class="rowEnd fade-in" style="justify-content: center; margin-top: 40px; animation-delay: 0.2s;">
+    <div class="rowEnd fade-in" style="justify-content: center; margin-top: 32px; animation-delay: 0.2s;">
       <a class="btn small" href="index.html">← Back to Dashboard</a>
     </div>
   </div>
 
+  <script type="module">
+    const loginToggle = document.getElementById('showLogin');
+    const signupToggle = document.getElementById('showSignup');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const msg = document.getElementById('msg');
+
+    loginToggle.addEventListener('click', () => {
+      loginToggle.classList.add('active');
+      signupToggle.classList.remove('active');
+      loginForm.style.display = 'block';
+      signupForm.style.display = 'none';
+      msg.textContent = '';
+    });
+
+    signupToggle.addEventListener('click', () => {
+      signupToggle.classList.add('active');
+      loginToggle.classList.remove('active');
+      loginForm.style.display = 'none';
+      signupForm.style.display = 'block';
+      msg.textContent = '';
+    });
+  </script>
   <script type="module" src="main.js"></script>
 </body>
 

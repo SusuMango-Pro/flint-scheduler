@@ -14,7 +14,7 @@ const CATEGORY_COLORS = [
 ];
 
 export function getCategoryColor(category) {
-    if (!category) return '#666666';
+    if (!category) return CATEGORY_COLORS[0];
     const key = category.trim().toLowerCase();
     let hash = 0;
     for (let i = 0; i < key.length; i++) {
@@ -633,11 +633,15 @@ export function initIndexPage() {
 
     function updateTabStyle() {
         if (currentTab === "team") {
-            teamTabBtn.style.borderBottom = "3px solid #007bff"; teamTabBtn.style.color = "#007bff";
-            myTabBtn.style.borderBottom = "3px solid transparent"; myTabBtn.style.color = "#666";
+            teamTabBtn.style.borderBottom = "2px solid var(--primary)";
+            teamTabBtn.style.color = "var(--primary)";
+            myTabBtn.style.borderBottom = "2px solid transparent";
+            myTabBtn.style.color = "var(--text-dim)";
         } else {
-            teamTabBtn.style.borderBottom = "3px solid transparent"; teamTabBtn.style.color = "#666";
-            myTabBtn.style.borderBottom = "3px solid #007bff"; myTabBtn.style.color = "#007bff";
+            teamTabBtn.style.borderBottom = "2px solid transparent";
+            teamTabBtn.style.color = "var(--text-dim)";
+            myTabBtn.style.borderBottom = "2px solid var(--primary)";
+            myTabBtn.style.color = "var(--primary)";
         }
     }
 
@@ -826,22 +830,6 @@ export function initIndexPage() {
             });
             groupDiv.appendChild(mixesContainer);
             mixRows.appendChild(groupDiv);
-        });
-                            catch (err) { console.error(err); alert("Error deleting mix: " + err.message); }
-    }
-} else {
-    alert("You can only delete your own mixes");
-}
-                };
-actionsDiv.appendChild(deleteBtn);
-
-mixItem.appendChild(infoDiv);
-mixItem.appendChild(actionsDiv);
-mixesContainer.appendChild(mixItem);
-            });
-
-groupDiv.appendChild(mixesContainer);
-mixRows.appendChild(groupDiv);
         });
     }
 }
